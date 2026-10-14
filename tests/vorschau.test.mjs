@@ -40,9 +40,10 @@ function feldnamenAusJs(attribut) {
     if (vor === '' && nach === '') continue; // Selektor-Bau im Hilfsfunktionskörper
     for (let i = 1; i <= 3; i += 1) namen.add(`${vor}${i}${nach}`);
   }
-  // Ankreuzfelder werden über die Hilfsfunktion gesetzt: setzeFlag("name", …).
+  // Ankreuzfelder werden über die Hilfsfunktion gesetzt: setzeFlag("name", …)
+  // – auch über mehrere Zeilen umbrochen.
   if (attribut === 'flag') {
-    for (const [, name] of js.matchAll(/setzeFlag\("([^"$]+)"/g)) namen.add(name);
+    for (const [, name] of js.matchAll(/setzeFlag\(\s*"([^"$]+)"/g)) namen.add(name);
   }
   return namen;
 }

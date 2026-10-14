@@ -27,7 +27,7 @@ Diese Notiz beantwortet drei Fragen:
 | 2 | Personalienblock | **Krankenkasse bzw. Kostenträger**, **Name, Vorname des Versicherten**, **geb. am**, **Kostenträgerkennung**, **Versicherten-Nr.**, **Status**, **Betriebsstätten-Nr.**, **Arzt-Nr.**, **Datum** (Ausstellungsdatum) |
 | 3 | Rechts oben | Titel **Heilmittelverordnung 13** + fünf Bereichskreuze: **Physiotherapie**, **Podologische Therapie**, **Stimm-, Sprech-, Sprach- und Schlucktherapie**, **Ergotherapie**, **Ernährungstherapie** – genau eine Auswahl ([KBV-Erl] S. 52) |
 | 4 | Diagnosen | **Behandlungsrelevante Diagnose(n)** mit **ICD-10-Code**: **zwei Codezeilen** + Klartextfeld ([KBV-Erl] S. 52) |
-| 5 | Diagnosegruppe / Leitsymptomatik | **Diagnosegruppe**, **Leitsymptomatik gemäß Heilmittelkatalog** mit Kästchen **a), b), c)**, Feld **patientenindividuelle Leitsymptomatik** ([KBV-Erl] S. 52; [HMK] S. 61) |
+| 5 | Diagnosegruppe / Leitsymptomatik | **Diagnosegruppe**, **Leitsymptomatik gemäß Heilmittelkatalog** mit Kästchen **a), b), c)**, **patientenindividuelle Leitsymptomatik** (Kästchen + Freitextbox darunter) ([KBV-Erl] S. 52; [HMK] S. 61) |
 | 6 | Heilmittel | **Heilmittel nach Maßgabe des Kataloges**: **drei Zeilen** für vorrangige Heilmittel + eine Zeile **Ergänzendes Heilmittel**, je mit **Behandlungseinheiten** ([KBV-Erl] S. 53; [HeilM-RL] § 12 Abs. 2–3) |
 | 7 | Kennzeichenzeile | **Therapiebericht**, **Hausbesuch** ja/nein, **Therapiefrequenz** ([KBV-Erl] S. 54–55) |
 | 8 | Dringlichkeit | **Dringlicher Behandlungsbedarf innerhalb von 14 Tagen** ([KBV-Erl] S. 55) |
@@ -78,7 +78,7 @@ fehlt ein Wert, bleibt das Feld leer ([`../preview/muster13.js`](../preview/must
 | ICD-10-Code Zeile 2 + Klartext | `weitere_diagnosen[0].code`, `.bezeichnung` | **neu** |
 | Diagnosegruppe | `diagnosegruppe` | vorhanden |
 | Leitsymptomatik a/b/c | `leitsymptomatik` | vorhanden |
-| patientenindividuelle Leitsymptomatik | `leitsymptomatik === "x"` bzw. `leitsymptomatik_freitext` | **neu** |
+| patientenindividuelle Leitsymptomatik | Kästchen an, wenn `leitsymptomatik === "x"` oder `leitsymptomatik_freitext` gesetzt; Freitextbox darunter zeigt `leitsymptomatik_freitext` | **neu** |
 | Heilmittelzeilen 1–3 / ergänzendes Heilmittel | `heilmittel[]` (`name`, `einheiten`, `art`), `ergaenzendes_heilmittel` | vorhanden (Array), `ergaenzendes_heilmittel` **neu** |
 | Behandlungseinheiten | `heilmittel[].einheiten` | vorhanden |
 | Therapiebericht | `therapiebericht` | **neu** |

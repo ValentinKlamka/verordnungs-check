@@ -94,19 +94,26 @@
         <!-- Diagnosegruppe und Leitsymptomatik -->
         <div class="abs box" style="left: 9.2mm; top: 72.6mm; width: 132mm; height: 8mm"></div>
         <div class="abs label" style="left: 10.2mm; top: 73.4mm; width: 17mm">Diagnosegruppe</div>
-        <div class="abs wert mono" style="left: 26.5mm; top: 75.4mm; width: 12mm" data-wert="diagnosegruppe"></div>
-        <div class="abs label klein" style="left: 41mm; top: 73.6mm; width: 24mm">
+        <div class="abs wert mono" style="left: 26.5mm; top: 75.4mm; width: 11mm" data-wert="diagnosegruppe"></div>
+        <div class="abs label klein" style="left: 38mm; top: 73.6mm; width: 31mm">
           Leitsymptomatik gemäß Heilmittelkatalog
         </div>
-        <div class="abs kaestchen" style="left: 66mm; top: 75.2mm">
+        <!-- Kästchen a / b / c an den Positionen des Originalvordrucks (72 / 82 / 92 mm) -->
+        <div class="abs kaestchen" style="left: 72mm; top: 75.2mm">
           <label><input type="checkbox" data-flag="ls_a" /><span>a</span></label>
+        </div>
+        <div class="abs kaestchen" style="left: 82mm; top: 75.2mm">
           <label><input type="checkbox" data-flag="ls_b" /><span>b</span></label>
+        </div>
+        <div class="abs kaestchen" style="left: 92mm; top: 75.2mm">
           <label><input type="checkbox" data-flag="ls_c" /><span>c</span></label>
         </div>
-        <div class="abs label klein" style="left: 82mm; top: 73.6mm; width: 22mm">
+        <div class="abs label klein" style="left: 101.6mm; top: 73.6mm; width: 38mm">
           patientenindividuelle Leitsymptomatik
         </div>
-        <div class="abs wert" style="left: 106mm; top: 75.4mm; width: 33mm" data-wert="leitsymptomatik_freitext_oder_x"></div>
+        <div class="abs kaestchen" style="left: 99mm; top: 75.2mm">
+          <label><input type="checkbox" data-flag="ls_patientenindividuell" /><span></span></label>
+        </div>
 
         <!-- Leitsymptomatik-Freitext -->
         <div class="abs box" style="left: 9.2mm; top: 82.4mm; width: 79.5mm; height: 14mm"></div>

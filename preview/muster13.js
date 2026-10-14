@@ -99,7 +99,12 @@ function fuelleVordruck() {
   setzeFlag("ls_a", vo.leitsymptomatik === "a");
   setzeFlag("ls_b", vo.leitsymptomatik === "b");
   setzeFlag("ls_c", vo.leitsymptomatik === "c");
-  setzeWert('[data-wert="leitsymptomatik_freitext_oder_x"]', vo.leitsymptomatik === "x" ? "x" : "");
+  // Die patientenindividuelle Leitsymptomatik wird angekreuzt, wenn der Katalog-
+  // Buchstabe „x" gilt oder ein Freitext eingetragen ist (Freitextbox darunter).
+  setzeFlag(
+    "ls_patientenindividuell",
+    vo.leitsymptomatik === "x" || Boolean(vo.leitsymptomatik_freitext),
+  );
   setzeWert('[data-wert="leitsymptomatik_freitext"]', vo.leitsymptomatik_freitext);
 
   // Drei Zeilen für vorrangige Heilmittel + eine Zeile für ein ergänzendes.
