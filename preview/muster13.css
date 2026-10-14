@@ -1,0 +1,421 @@
+/* Vorschau der Heilmittelverordnung (Muster 13) – DIN A5 hoch, 148 × 210 mm.
+   Farbigkeit und Kästenaufbau folgen dem Originalvordruck (blaue Flächenfarbe),
+   die Positionen stammen aus der Vermessung des Originalvordrucks (±1–2 mm). */
+
+:root {
+  --blue: #1b4f9c; /* Flächenfarbe des Vordrucks */
+  --blue-soft: #e8eef8; /* heller Hintergrund der Feldkästen */
+  --blue-hair: #1b4f9c;
+  --ink: #10151c;
+  --muted: #5b6675;
+  --red: #b3261e;
+  --green: #1d6b3a;
+  --amber: #a35c00;
+  --sheet-font:
+    "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #eef1f5;
+  color: var(--ink);
+  font-family: var(--sheet-font);
+}
+
+/* ---------------------------------------------------------------- Toolbar */
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #d6dce5;
+}
+
+.toolbar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.95rem;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.toolbar .muted {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.toolbar button,
+.toolbar .file span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #c3cbd8;
+  background: #f7f9fc;
+  color: var(--ink);
+  border-radius: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.toolbar button:hover,
+.toolbar .file:hover span {
+  background: #eaeff7;
+}
+
+.toolbar .file input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toolbar .file {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ------------------------------------------------------------------ Bühne */
+
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: flex-start;
+  padding: 1.25rem;
+}
+
+#buehne.zoom {
+  /* Nur für die Bildschirmansicht: der Vordruck ist original A5. */
+  zoom: 1.5;
+}
+
+/* ---------------------------------------------------------------- Vordruck */
+
+.sheet {
+  position: relative;
+  flex: none;
+  width: 148mm;
+  height: 210mm;
+  background: #fff;
+  border: 1px solid #c3cbd8;
+  box-shadow: 0 2px 10px rgba(16, 21, 28, 0.14);
+  /* Grundschrift des Vordrucks: sehr klein, deshalb gibt es die Zoom-Taste. */
+  font-size: 2.6mm;
+  line-height: 1.25;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.sheet .abs {
+  position: absolute;
+}
+
+.sheet .box {
+  background: var(--blue-soft);
+  border: 0.2mm solid var(--blue-hair);
+}
+
+.sheet .hline {
+  height: 0;
+  border-top: 0.2mm solid var(--blue-hair);
+}
+
+.sheet .vline {
+  width: 0;
+  border-left: 0.2mm solid var(--blue-hair);
+}
+
+.sheet .label {
+  color: var(--blue);
+  font-size: 2.1mm;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet .label.klein {
+  font-size: 1.7mm;
+  line-height: 1.15;
+  white-space: normal;
+  overflow: hidden;
+}
+
+.sheet .label.fett {
+  font-weight: 700;
+}
+
+.sheet .wert {
+  font-size: 2.9mm;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet .wert.fett {
+  font-weight: 700;
+}
+
+.sheet .wert.mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.sheet .wert.rechts {
+  text-align: right;
+}
+
+/* Mehrzeilige Felder (Freitextboxen) wachsen nicht über ihren Kasten hinaus. */
+.sheet .wert.mehrzeilig {
+  white-space: normal;
+  overflow: hidden;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.sheet .wert.klein {
+  font-size: 2.3mm;
+  white-space: normal;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.sheet .titel {
+  color: var(--blue);
+  font-size: 3.6mm;
+  font-weight: 700;
+  text-align: right;
+}
+
+.sheet .titel-nr {
+  font-size: 4.6mm;
+}
+
+.sheet .freigabe {
+  color: var(--muted);
+  font-size: 1.8mm;
+  text-align: center;
+}
+
+/* Ankreuzfelder links und in der Kennzeichen-Zeile */
+
+.sheet .kennzeile {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2mm;
+  width: 6.6mm;
+}
+
+.sheet .flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4mm;
+}
+
+.sheet .flag span {
+  /* Sehr schmale Leiste wie im Original: Beschriftung läuft senkrecht. */
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 1.7mm;
+  line-height: 1;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.sheet .bereich {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35mm;
+}
+
+.sheet .bereich span,
+.sheet .kaestchen span {
+  font-size: 2.1mm;
+  color: var(--ink);
+}
+
+.sheet .kaestchen {
+  display: flex;
+  gap: 3mm;
+}
+
+.sheet .kaestchen label,
+.sheet .bereich label {
+  display: flex;
+  align-items: center;
+  gap: 0.6mm;
+}
+
+.sheet input[type="checkbox"] {
+  width: 2.2mm;
+  height: 2.2mm;
+  margin: 0;
+  accent-color: var(--blue);
+}
+
+/* IK-Feld: 9 Kästchen */
+
+.sheet .ik {
+  display: flex;
+  gap: 0.3mm;
+}
+
+.sheet .ik span {
+  display: inline-block;
+  width: 4.6mm;
+  height: 4.6mm;
+  border: 0.2mm solid var(--blue-hair);
+  background: var(--blue-soft);
+}
+
+.sheet .fuss {
+  display: flex;
+  justify-content: space-between;
+  gap: 4mm;
+  color: var(--muted);
+  font-size: 1.8mm;
+}
+
+/* Zoom-Variante: im Ausdruck immer 100 % */
+
+/* --------------------------------------------------------- Seitenleiste */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: min(30rem, 100%);
+}
+
+.panel .card {
+  background: #fff;
+  border: 1px solid #d6dce5;
+  border-radius: 0.6rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel .ampel {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.panel .ampel.gruen {
+  color: var(--green);
+}
+
+.panel .ampel.gelb {
+  color: var(--amber);
+}
+
+.panel .ampel.rot {
+  color: var(--red);
+}
+
+.panel .kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem 0.6rem;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.panel .kv dt {
+  color: var(--muted);
+}
+
+.panel .kv dd {
+  margin: 0;
+}
+
+.panel .hinweise {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.82rem;
+  color: #2b333d;
+}
+
+.panel .hinweise li + li {
+  margin-top: 0.3rem;
+}
+
+.panel .hinweise code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+}
+
+.panel .hinweise .status {
+  font-weight: 600;
+}
+
+.panel .hinweise .status.ok {
+  color: var(--green);
+}
+
+.panel .hinweise .status.fehlt,
+.panel .hinweise .status.fehlerhaft {
+  color: var(--red);
+}
+
+.panel .hinweise .status.hinweis {
+  color: var(--amber);
+}
+
+/* ------------------------------------------------------------- Ausdruck */
+
+@page {
+  size: A5 portrait;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .toolbar,
+  .panel {
+    display: none;
+  }
+
+  #buehne.zoom {
+    zoom: 1;
+  }
+
+  .stage {
+    padding: 0;
+  }
+
+  .sheet {
+    border: 0;
+    box-shadow: none;
+  }
+}

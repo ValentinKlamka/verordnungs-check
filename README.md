@@ -23,6 +23,17 @@ Die Rezeption gibt die Angaben einer Verordnung in einen Chat ein. Vier speziali
 
 Die Rezeption entscheidet. Das System gibt Empfehlungen, es weist nichts automatisch ab.
 
+## Ausgabe: Vorschau der ausgefüllten Verordnung
+
+Ergebnis der Prüfung ist neben der Ampel eine **Vorschau der ausgefüllten Heilmittelverordnung (Muster 13)**: Der erfasste Fall wird auf den Vordruck gezeichnet, damit die Rezeption sieht, was tatsächlich auf dem Formular steht – und was dort nicht hingehört.
+
+Die Vorschau ist eine statische Seite ohne Build: [`preview/muster13.html`](preview/muster13.html) im Browser öffnen, sie lädt die Ausgabe des Workflows (Beispielfall enthalten, echte Ausgaben über „Workflow-Ausgabe laden"). Sie rechnet und erfindet nichts – fehlende Werte bleiben leer.
+
+Zwei Dinge sind dabei fachlich entscheidend ([`docs/vordruck-muster13.md`](docs/vordruck-muster13.md)):
+
+- Auf den Vordruck passen **zwei ICD-10-GM-Codes**. Erkannt werden im Freitext oft mehr, deshalb wählt der Workflow nach einer festen Regel aus (führende Diagnose + zweite Diagnose, übrige Codes mit Begründung als „nicht übernommen" sichtbar).
+- Der Vordruck kennt **keinen Behandlungsbeginn, keine Erst-/Folgeverordnung und kein Ankreuzfeld „besonderer Verordnungsbedarf"**. Die Frist läuft ab dem Ausstellungsdatum (§ 15 Abs. 1 HeilM-RL), der Verordnungsfall ersetzt die Verordnungsart (§ 7 Abs. 1), und besonderer Bedarf wird über die ICD-Codes der Diagnoseliste geltend gemacht.
+
 ## Architektur
 
 ```mermaid
@@ -59,10 +70,11 @@ Details: [docs/architektur.md](docs/architektur.md)
 | Ordner | Inhalt |
 |---|---|
 | `n8n/` | Exportierte Workflows (.json) |
+| `preview/` | Vorschau der ausgefüllten Verordnung (Muster 13), Beispieldaten, kein Build |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
-| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`) |
-| `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance |
+| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`) und für die Vorschau (`node tests/vorschau.test.mjs`) |
+| `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13 |
 
 ## Team
 
@@ -86,3 +98,9 @@ Design-Briefing (Sprint 1): [Scope](docs/scope.md) · [Erfolgskriterien](docs/er
 Geplant für Sprint 2: Verordnungsfall-Prüfung (Folgeverordnungen, orientierende Behandlungsmenge), siehe [`docs/dateneingang.md`](docs/dateneingang.md). Foto-Upload nur bei Puffer.
 
 Offen: Ist-Interview mit der Praxis, Business Case, EU-AI-Act-Einordnung, Präsentation.
+
+Ergänzung 14.10.2026: Die Vorschau der ausgefüllten Verordnung liegt in
+[`preview/`](preview/README.md), die Feldzuordnung (Workflow → Vordruck) und die
+Auswahlregel für die zwei Diagnosen in [`docs/vordruck-muster13.md`](docs/vordruck-muster13.md).
+Der Workflow selbst liefert bisher eine ICD-10-GM und keine Stammdaten; die
+Schema-Erweiterung in n8n steht noch aus (Abschnitt „Stand" in [`preview/README.md`](preview/README.md)).

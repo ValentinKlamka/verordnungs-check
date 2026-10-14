@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vorschau Heilmittelverordnung (Muster 13) – Verordnungs-Check</title>
+    <link rel="stylesheet" href="muster13.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <div class="toolbar-main">
+        <strong>Vorschau: ausgefüllte Heilmittelverordnung (Muster 13)</strong>
+        <span class="muted">Nachbildung zur Veranschaulichung – kein amtlicher Vordruck.</span>
+      </div>
+      <div class="toolbar-actions">
+        <label class="file">
+          <input type="file" id="datei" accept="application/json,.json" />
+          <span>Workflow-Ausgabe laden (JSON)</span>
+        </label>
+        <button type="button" id="beispiel">Beispielfall</button>
+        <button type="button" id="zoom">Ansicht 150 %</button>
+        <button type="button" id="drucken">Drucken</button>
+      </div>
+    </header>
+
+    <main class="stage" id="buehne">
+      <!-- ------------------------------------------------------------------ -->
+      <!-- Vordruck: DIN A5 hoch (148 × 210 mm). Positionen aus der Vermessung  -->
+      <!-- des Originalvordrucks (KBV-Mustersammlung, S. 27), ±1–2 mm.          -->
+      <!-- ------------------------------------------------------------------ -->
+      <article class="sheet" id="vordruck" aria-label="Heilmittelverordnung Muster 13">
+        <!-- Kopf: Titel -->
+        <div class="abs titel" style="left: 100mm; top: 3.4mm; width: 44mm">
+          Heilmittelverordnung&nbsp;<span class="titel-nr">13</span>
+        </div>
+        <div class="abs freigabe" style="left: 55mm; top: 3.2mm; width: 40mm">Freigabe 08.01.2020</div>
+
+        <!-- Linke Kennzeichen-Leiste -->
+        <div class="abs kennzeile" style="left: 2.2mm; top: 7mm">
+          <label class="flag"><input type="checkbox" data-flag="zuzahlung_frei" /><span>Zuzahlung frei</span></label>
+          <label class="flag"><input type="checkbox" data-flag="zuzahlung_pflicht" /><span>Zuzahlungspflicht</span></label>
+          <label class="flag"><input type="checkbox" data-flag="unfallfolgen" /><span>Unfallfolgen</span></label>
+          <label class="flag"><input type="checkbox" data-flag="bvg_ser" /><span>BVG / SER</span></label>
+        </div>
+
+        <!-- Personalienblock -->
+        <div class="abs box" style="left: 9.2mm; top: 6.6mm; width: 79.5mm; height: 45.2mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 7.4mm">Krankenkasse bzw. Kostenträger</div>
+        <div class="abs wert fett" style="left: 10.2mm; top: 10.6mm; width: 77.5mm" data-wert="patient.krankenkasse"></div>
+
+        <div class="abs label" style="left: 10.2mm; top: 17.6mm">Name, Vorname des Versicherten</div>
+        <div class="abs label" style="left: 62.0mm; top: 17.6mm">geb. am</div>
+        <div class="abs wert" style="left: 10.2mm; top: 21mm; width: 50mm" data-wert="patient.name"></div>
+        <div class="abs wert" style="left: 62.0mm; top: 21mm; width: 25.7mm" data-wert="patient.geburtsdatum"></div>
+
+        <div class="abs hline" style="left: 9.2mm; top: 35mm; width: 79.5mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 37.6mm">Kostenträgerkennung</div>
+        <div class="abs label" style="left: 40.0mm; top: 37.6mm">Versicherten-Nr.</div>
+        <div class="abs label" style="left: 68.0mm; top: 37.6mm">Status</div>
+        <div class="abs wert" style="left: 10.2mm; top: 40.8mm; width: 28mm" data-wert="patient.kostentraegerkennung"></div>
+        <div class="abs wert" style="left: 40.0mm; top: 40.8mm; width: 26mm" data-wert="patient.versichertennummer"></div>
+        <div class="abs wert" style="left: 68.0mm; top: 40.8mm; width: 19.7mm" data-wert="patient.versichertenstatus"></div>
+
+        <div class="abs hline" style="left: 9.2mm; top: 44mm; width: 79.5mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 45.6mm">Betriebsstätten-Nr.</div>
+        <div class="abs label" style="left: 40.0mm; top: 45.6mm">Arzt-Nr.</div>
+        <div class="abs label" style="left: 68.0mm; top: 45.6mm">Datum</div>
+        <div class="abs wert" style="left: 10.2mm; top: 48.8mm; width: 28mm" data-wert="bsnr"></div>
+        <div class="abs wert" style="left: 40.0mm; top: 48.8mm; width: 26mm" data-wert="lanr"></div>
+        <div class="abs wert" style="left: 68.0mm; top: 48.8mm; width: 19.7mm" data-wert="ausstellungsdatum"></div>
+
+        <!-- Heilmittelbereich -->
+        <div class="abs bereich" style="left: 93.1mm; top: 15.1mm">
+          <label><input type="checkbox" data-flag="bereich_physiotherapie" /><span>Physiotherapie</span></label>
+          <label><input type="checkbox" data-flag="bereich_podologie" /><span>Podologische Therapie</span></label>
+          <label><input type="checkbox" data-flag="bereich_ssss" /><span>Stimm-, Sprech-, Sprach- und Schlucktherapie</span></label>
+          <label><input type="checkbox" data-flag="bereich_ergotherapie" /><span>Ergotherapie</span></label>
+          <label><input type="checkbox" data-flag="bereich_ernaehrung" /><span>Ernährungstherapie</span></label>
+        </div>
+
+        <!-- Behandlungsrelevante Diagnosen -->
+        <div class="abs label" style="left: 10.2mm; top: 54.4mm; width: 15mm">ICD-10-Code</div>
+        <div class="abs label fett" style="left: 26.5mm; top: 54.4mm; width: 62mm">
+          Behandlungsrelevante Diagnose(n)
+        </div>
+        <div class="abs box" style="left: 9.2mm; top: 57.6mm; width: 79.5mm; height: 14mm"></div>
+        <div class="abs vline" style="left: 25.5mm; top: 57.6mm; height: 14mm"></div>
+        <div class="abs hline" style="left: 9.2mm; top: 64.6mm; width: 79.5mm"></div>
+        <div class="abs wert mono" style="left: 10.2mm; top: 59.4mm; width: 14mm" data-wert="diagnose.1.code"></div>
+        <div class="abs wert" style="left: 26.5mm; top: 59.4mm; width: 61mm" data-wert="diagnose.1.text"></div>
+        <div class="abs wert mono" style="left: 10.2mm; top: 66.4mm; width: 14mm" data-wert="diagnose.2.code"></div>
+        <div class="abs wert" style="left: 26.5mm; top: 66.4mm; width: 61mm" data-wert="diagnose.2.text"></div>
+
+        <!-- Diagnosegruppe und Leitsymptomatik -->
+        <div class="abs box" style="left: 9.2mm; top: 72.6mm; width: 132mm; height: 8mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 73.4mm; width: 17mm">Diagnosegruppe</div>
+        <div class="abs wert mono" style="left: 26.5mm; top: 75.4mm; width: 12mm" data-wert="diagnosegruppe"></div>
+        <div class="abs label klein" style="left: 41mm; top: 73.6mm; width: 24mm">
+          Leitsymptomatik gemäß Heilmittelkatalog
+        </div>
+        <div class="abs kaestchen" style="left: 66mm; top: 75.2mm">
+          <label><input type="checkbox" data-flag="ls_a" /><span>a</span></label>
+          <label><input type="checkbox" data-flag="ls_b" /><span>b</span></label>
+          <label><input type="checkbox" data-flag="ls_c" /><span>c</span></label>
+        </div>
+        <div class="abs label klein" style="left: 82mm; top: 73.6mm; width: 22mm">
+          patientenindividuelle Leitsymptomatik
+        </div>
+        <div class="abs wert" style="left: 106mm; top: 75.4mm; width: 33mm" data-wert="leitsymptomatik_freitext_oder_x"></div>
+
+        <!-- Leitsymptomatik-Freitext -->
+        <div class="abs box" style="left: 9.2mm; top: 82.4mm; width: 79.5mm; height: 14mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 83.0mm">
+          Leitsymptomatik (patientenindividuelle Leitsymptomatik als Freitext angeben)
+        </div>
+        <div class="abs wert" style="left: 10.2mm; top: 86.4mm; width: 77.5mm" data-wert="leitsymptomatik_freitext"></div>
+
+        <!-- Heilmittelblock: 3 Zeilen + ergänzendes Heilmittel -->
+        <div class="abs label fett" style="left: 10.2mm; top: 98.0mm; width: 70mm">
+          Heilmittel nach Maßgabe des Kataloges
+        </div>
+        <div class="abs label" style="left: 118.6mm; top: 98.0mm; width: 22.5mm">Behandlungs­einheiten</div>
+
+        <div class="abs box" style="left: 9.2mm; top: 101.6mm; width: 132mm; height: 21.2mm"></div>
+        <div class="abs hline" style="left: 9.2mm; top: 108.7mm; width: 132mm"></div>
+        <div class="abs hline" style="left: 9.2mm; top: 115.8mm; width: 132mm"></div>
+        <div class="abs vline" style="left: 118.2mm; top: 101.6mm; height: 21.2mm"></div>
+        <div class="abs wert" style="left: 10.2mm; top: 103.4mm; width: 106mm" data-wert="heilmittel.1"></div>
+        <div class="abs wert mono rechts" style="left: 119.2mm; top: 103.4mm; width: 20.5mm" data-wert="einheiten.1"></div>
+        <div class="abs wert" style="left: 10.2mm; top: 110.5mm; width: 106mm" data-wert="heilmittel.2"></div>
+        <div class="abs wert mono rechts" style="left: 119.2mm; top: 110.5mm; width: 20.5mm" data-wert="einheiten.2"></div>
+        <div class="abs wert" style="left: 10.2mm; top: 117.6mm; width: 106mm" data-wert="heilmittel.3"></div>
+        <div class="abs wert mono rechts" style="left: 119.2mm; top: 117.6mm; width: 20.5mm" data-wert="einheiten.3"></div>
+
+        <div class="abs box" style="left: 9.2mm; top: 125.6mm; width: 132mm; height: 7.2mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 126.4mm">Ergänzendes Heilmittel</div>
+        <div class="abs wert" style="left: 40mm; top: 128.2mm; width: 76mm" data-wert="heilmittel.ergaenzend"></div>
+        <div class="abs vline" style="left: 118.2mm; top: 125.6mm; height: 7.2mm"></div>
+        <div class="abs wert mono rechts" style="left: 119.2mm; top: 128.2mm; width: 20.5mm" data-wert="einheiten.ergaenzend"></div>
+
+        <!-- Kennzeichen-Zeile -->
+        <div class="abs box" style="left: 9.2mm; top: 134.9mm; width: 132mm; height: 6.4mm"></div>
+        <div class="abs kaestchen" style="left: 9.9mm; top: 135.7mm">
+          <label><input type="checkbox" data-flag="therapiebericht" /><span>Therapiebericht</span></label>
+        </div>
+        <div class="abs kaestchen" style="left: 58mm; top: 135.7mm">
+          <label><input type="checkbox" data-flag="hausbesuch_ja" /><span>Hausbesuch ja</span></label>
+          <label><input type="checkbox" data-flag="hausbesuch_nein" /><span>nein</span></label>
+        </div>
+        <div class="abs label" style="left: 88mm; top: 135.7mm">Therapiefrequenz</div>
+        <div class="abs wert mono" style="left: 107.5mm; top: 137.4mm; width: 30mm" data-wert="frequenz"></div>
+
+        <!-- Dringlicher Behandlungsbedarf -->
+        <div class="abs box" style="left: 9.2mm; top: 143.9mm; width: 79.5mm; height: 5.6mm"></div>
+        <div class="abs kaestchen" style="left: 10.2mm; top: 144.7mm">
+          <label
+            ><input type="checkbox" data-flag="dringlich" /><span
+              >Dringlicher Behandlungsbedarf innerhalb von 14 Tagen</span
+            ></label
+          >
+        </div>
+
+        <!-- Therapieziele / Hinweise -->
+        <div class="abs box" style="left: 9.2mm; top: 155.2mm; width: 81.1mm; height: 36.5mm"></div>
+        <div class="abs label" style="left: 10.2mm; top: 155.9mm">
+          ggf. Therapieziele / weitere med. Befunde und Hinweise
+        </div>
+        <div class="abs wert mehrzeilig" style="left: 10.2mm; top: 159.4mm; width: 79mm; height: 31mm" data-wert="therapieziele_hinweise"></div>
+
+        <!-- Arztstempel / Unterschrift -->
+        <div class="abs box" style="left: 93.3mm; top: 164.3mm; width: 47.5mm; height: 33.3mm"></div>
+        <div class="abs label" style="left: 95mm; top: 165.1mm; width: 44mm">
+          Vertragsarztstempel / Unterschrift des Arztes
+        </div>
+        <div class="abs wert klein" style="left: 95mm; top: 189mm; width: 44mm; height: 7.6mm" data-wert="arztzeile"></div>
+
+        <!-- IK des Leistungserbringers -->
+        <div class="abs label" style="left: 9.2mm; top: 194.4mm; width: 34mm">
+          IK des Leistungs­erbringers
+        </div>
+        <div class="abs ik" style="left: 44.8mm; top: 194mm" data-ik="9"></div>
+
+        <!-- Fußzeile -->
+        <div class="abs fuss" style="left: 9.2mm; top: 202mm; width: 131.6mm">
+          <span>Muster 13 (10.2020)</span>
+          <span>Vorschau – Nachbildung, kein amtlicher Vordruck</span>
+        </div>
+      </article>
+
+      <!-- ------------------------------------------------------------------ -->
+      <!-- Seitenleiste: Ergebnis der Prüfung und Feldhinweise                 -->
+      <!-- ------------------------------------------------------------------ -->
+      <aside class="panel">
+        <section class="card" id="ampel-card">
+          <h2>Prüfergebnis</h2>
+          <p class="ampel" id="ampel">–</p>
+          <dl class="kv" id="ampel-details"></dl>
+        </section>
+
+        <section class="card">
+          <h2>Was auf dem Vordruck nicht vorgesehen ist</h2>
+          <ul class="hinweise" id="hinweise"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Nicht übernommene Diagnosen</h2>
+          <ul class="hinweise" id="verworfen"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Befunde aus dem Workflow</h2>
+          <ul class="hinweise" id="befunde"></ul>
+        </section>
+      </aside>
+    </main>
+
+    <script src="beispiel-workflow-ausgabe.js"></script>
+    <script src="muster13.js"></script>
+  </body>
+</html>
