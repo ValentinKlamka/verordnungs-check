@@ -271,6 +271,14 @@ body {
   align-self: center;
 }
 
+/* Beschriftung mit Kästchen direkt daneben, in einer Zeile. */
+.sheet .kasten-zeile {
+  display: flex;
+  align-items: center;
+  gap: 0.8mm;
+  white-space: nowrap;
+}
+
 .sheet input[type="checkbox"] {
   width: 2.2mm;
   height: 2.2mm;
