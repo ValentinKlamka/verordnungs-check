@@ -11,12 +11,14 @@
       <div class="toolbar-main">
         <strong>Vorschau: ausgefüllte Heilmittelverordnung (Muster 13)</strong>
         <span class="muted">Nachbildung zur Veranschaulichung – kein amtlicher Vordruck.</span>
+        <span class="muted" id="quelle">Angezeigt: Beispielfall (synthetisch)</span>
       </div>
       <div class="toolbar-actions">
         <label class="file">
           <input type="file" id="datei" accept="application/json,.json" />
           <span>Workflow-Ausgabe laden (JSON)</span>
         </label>
+        <button type="button" id="letzter-lauf" disabled>Letzter n8n-Lauf</button>
         <button type="button" id="beispiel">Beispielfall</button>
         <button type="button" id="zoom">Ansicht 150 %</button>
         <button type="button" id="drucken">Drucken</button>
@@ -209,6 +211,11 @@
         </section>
 
         <section class="card">
+          <h2>Auswahl der zwei Diagnosezeilen</h2>
+          <ul class="hinweise" id="diagnoseauswahl"></ul>
+        </section>
+
+        <section class="card">
           <h2>Nicht übernommene Diagnosen</h2>
           <ul class="hinweise" id="verworfen"></ul>
         </section>
@@ -221,6 +228,8 @@
     </main>
 
     <script src="beispiel-workflow-ausgabe.js"></script>
+    <!-- Aus einem lokalen n8n-Lauf erzeugt (npm run vorschau:lauf); fehlt die Datei, bleibt der Beispielfall. -->
+    <script src="letzter-lauf.js"></script>
     <script src="muster13.js"></script>
   </body>
 </html>

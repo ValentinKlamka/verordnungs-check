@@ -6,6 +6,10 @@
 // der Workflow-Ausgabe, bleibt das Feld leer und wird im Hinweisbereich genannt.
 
 const QUELLE_BEISPIEL = () => window.BEISPIEL_WORKFLOW_AUSGABE;
+/** Ausgabe des letzten lokalen n8n-Laufs (preview/letzter-lauf.js), sonst null. */
+const QUELLE_LAUF = () =>
+  window.LETZTER_LAUF && typeof window.LETZTER_LAUF === "object" ? window.LETZTER_LAUF : null;
+const BEZEICHNUNG_LAUF = "letzter n8n-Lauf";
 
 let ausgabe = null;
 
@@ -204,6 +208,29 @@ function fuellePanel() {
   );
   liste("hinweise", hinweise);
 
+  // Auswahl der zwei Diagnosezeilen: was der Workflow erkannt und wie er entschieden hat.
+  const auswahl = ausgabe?.diagnose_auswahl;
+  if (auswahl) {
+    const auswahlZeilen = [
+      `Erkannt: <strong>${text(auswahl.erkannt ?? 0)}</strong> ICD-10-GM-Code(s)`,
+      auswahl.fuehrend
+        ? `Zeile 1 (führend): <code>${text(auswahl.fuehrend.code)}</code> ${text(auswahl.fuehrend.bezeichnung)}` +
+          (auswahl.fuehrend.anlass ? " <span class=\"muted\">(Anlass der Verordnung)</span>" : "")
+        : "Zeile 1: leer – kein Code erkannt",
+      auswahl.zweite
+        ? `Zeile 2: <code>${text(auswahl.zweite.code)}</code> ${text(auswahl.zweite.bezeichnung)}`
+        : "Zeile 2: nicht belegt (kein zweiter passender Code)",
+    ];
+    for (const hinweis of auswahl.hinweise ?? []) {
+      auswahlZeilen.push(`<strong>Fachlich prüfen:</strong> ${text(hinweis)}`);
+    }
+    liste("diagnoseauswahl", auswahlZeilen);
+  } else {
+    liste("diagnoseauswahl", [
+      "Diese Ausgabe enthält keine Information zur Diagnoseauswahl (ältere Workflow-Ausgabe oder von Hand geladene Datei).",
+    ]);
+  }
+
   liste(
     "verworfen",
     (vo.nicht_verordnungsrelevant ?? []).map(
@@ -229,12 +256,20 @@ function anzeigen(daten, quelle) {
   ausgabe = daten;
   fuelleVordruck();
   fuellePanel();
+  document.getElementById("quelle").textContent = `Angezeigt: ${quelle}`;
   document.title = `Vorschau Muster 13 – ${ausgabe?.verordnung_ref ?? "ohne Referenz"} (${quelle})`;
 }
 
 document.getElementById("beispiel").addEventListener("click", () => {
-  anzeigen(QUELLE_BEISPIEL(), "Beispielfall");
+  anzeigen(QUELLE_BEISPIEL(), "Beispielfall (synthetisch)");
 });
+
+const knopfLauf = document.getElementById("letzter-lauf");
+if (QUELLE_LAUF()) {
+  knopfLauf.addEventListener("click", () => anzeigen(QUELLE_LAUF(), BEZEICHNUNG_LAUF));
+} else {
+  knopfLauf.title = 'Kein Lauf vorhanden – im Projektordner „npm run vorschau:lauf" ausführen.';
+}
 
 document.getElementById("datei").addEventListener("change", async (event) => {
   const datei = event.target.files?.[0];
@@ -261,4 +296,5 @@ document.getElementById("drucken").addEventListener("click", () => window.print(
 // Startzustand: Bildschirmansicht 150 %, gedruckt wird immer A5 in 100 %.
 document.getElementById("buehne").classList.add("zoom");
 document.getElementById("zoom").textContent = "Ansicht 100 %";
-anzeigen(QUELLE_BEISPIEL(), "Beispielfall");
+// Liegt ein lokaler Lauf vor, wird dieser gezeigt – sonst der synthetische Beispielfall.
+anzeigen(QUELLE_LAUF() ?? QUELLE_BEISPIEL(), QUELLE_LAUF() ? BEZEICHNUNG_LAUF : "Beispielfall (synthetisch)");

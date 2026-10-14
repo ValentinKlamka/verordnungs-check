@@ -3,25 +3,26 @@
 ## Ablauf
 
 1. **Chat (n8n Chat Trigger):** Die Rezeption fügt die Angaben einer Verordnung als Text oder JSON ein.
-2. **Verordnung erfassen:** Ein LLM-Agent überführt den Text in ein festes JSON-Schema. Fehlende Angaben werden `null`, nichts wird geraten.
-3. **Fakten berechnen (Code-Node „Fristen berechnen“):** Alles, was sich als Regel aufschreiben lässt, rechnet der Code, nicht das LLM:
+2. **Verordnung erfassen:** Ein LLM-Agent überführt den Text in ein festes JSON-Schema. Fehlende Angaben werden `null`, nichts wird geraten. Er erfasst alle genannten ICD-10-GM-Codes als Liste (`diagnosen[]`, in Nennungsreihenfolge, mit Kennzeichen `anlass`), dazu Personalien, Kennzeichen und Stammdaten.
+3. **Diagnosen auswählen (Code-Node):** Auf den Vordruck Muster 13 passen zwei ICD-10-Zeilen. Der Node wählt sie nach der Regel in [`vordruck-muster13.md`](vordruck-muster13.md), Abschnitt 5 (verordnungsrelevant = passt zur Diagnosegruppe des Heilmittels), belegt `icd10` und `weitere_diagnosen`, begründet jede verworfene Diagnose in `nicht_verordnungsrelevant` und meldet Zweifelsfälle als `diagnose_auswahl.hinweise`. Abgesichert durch `tests/diagnosen.test.mjs`.
+4. **Fakten berechnen (Code-Node „Fristen berechnen“):** Alles, was sich als Regel aufschreiben lässt, rechnet der Code, nicht das LLM:
    - Tage zwischen Ausstellung, geplantem Beginn und letzter Behandlung. Grenzwerte: Behandlungsbeginn 28 Tage (14 Tage bei dringlichem Behandlungsbedarf), Unterbrechung 14 Tage
    - Format von LANR und BSNR (9 Ziffern)
    - Körperregion des ICD-Codes → passende Diagnosegruppe (WS oder EX) für die häufigsten Muskel-Skelett-Bereiche
    - Summe der Einheiten, Anzahl vorrangiger Heilmittel
 
    Die Prüf-Agenten erhalten diese Werte als „berechnete Fakten“, die für sie verbindlich sind. Abgesichert durch `tests/fakten.test.mjs`.
-4. **Vier Prüf-Agenten:** Jeder Agent bekommt die Verordnung und die berechneten Fakten, durchsucht seinen Ausschnitt der Wissensbasis und liefert Befunde im gemeinsamen JSON-Schema.
-5. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext.
-6. **Protokoll:** Prüfung und Befunde werden in Supabase gespeichert.
+5. **Vier Prüf-Agenten:** Jeder Agent bekommt die Verordnung und die berechneten Fakten, durchsucht seinen Ausschnitt der Wissensbasis und liefert Befunde im gemeinsamen JSON-Schema.
+6. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext – und die Diagnoseauswahl für Vorschau und Protokoll.
+7. **Protokoll:** Prüfung und Befunde werden in Supabase gespeichert.
 
-**Ab Sprint 2 (Verordnungsfall-Prüfung):** Zwischen Schritt 3 und 4 kommen zwei Komponenten dazu:
+**Ab Sprint 2 (Verordnungsfall-Prüfung):** Zwischen Schritt 4 und 5 kommen zwei Komponenten dazu:
 
 - **Historie abfragen** (Supabase-Node): liest frühere Verordnungen mit demselben Patienten-Pseudonym, derselben ICD-Stelle (3-stellig), Diagnosegruppe und LANR.
 - **Verordnungsfall berechnen** (Code-Node): summiert die Einheiten und prüft die 6-Monats-Regel (§ 7 HeilM-RL).
 
 Das Ergebnis geht als berechneter Fakt an den Mengen-Prüfer. Jede geprüfte Verordnung wird in die Historie geschrieben. Details: [`dateneingang.md`](dateneingang.md).
-7. **Antwort:** Die Rezeption erhält Ampel, Korrekturhinweise und Fundstellen.
+8. **Antwort:** Die Rezeption erhält Ampel, Korrekturhinweise und Fundstellen.
 
 ## Befund-Schema
 

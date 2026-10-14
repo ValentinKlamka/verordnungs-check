@@ -4,6 +4,8 @@
 // Geprüft wird:
 //  1. Die in den Beispieldaten hinterlegten Fakten stimmen mit dem Code-Node
 //     „Fristen berechnen" überein (dasselbe Verfahren wie fakten.test.mjs).
+//  1b. Die Diagnoseauswahl der Beispieldaten stimmt mit dem Code-Node
+//     „Diagnosen auswählen" überein (Regel: docs/vordruck-muster13.md).
 //  2. Vordruck (HTML) und Fülllogik (JS) kennen dieselben Felder – kein Feld im
 //     Markup ohne Zuweisung, keine Zuweisung ohne Feld.
 //  3. Pflichtangaben des Vordrucks sind in den Beispieldaten gesetzt.
@@ -25,6 +27,31 @@ const fakten = new Function('$input', codeNode)({ first: () => ({ json: { output
   .fakten;
 assert.deepEqual(ausgabe.eingabe.fakten, fakten, 'Fakten der Beispieldaten weichen vom Workflow ab');
 console.log('✓ Fakten stimmen mit dem Code-Node „Fristen berechnen" überein');
+
+// --- 1b. Diagnoseauswahl gegen den Code-Node nachrechnen --------------------
+const auswahlCode = wf.nodes.find((n) => n.name === 'Diagnosen auswählen').parameters.jsCode;
+const auswahl = new Function('$input', auswahlCode)({ first: () => ({ json: { output: vo } }) })[0]
+  .json;
+assert.deepEqual(
+  auswahl.output.weitere_diagnosen,
+  vo.weitere_diagnosen,
+  'Zweite Diagnosezeile der Beispieldaten weicht von der Auswahlregel ab',
+);
+assert.deepEqual(
+  auswahl.output.nicht_verordnungsrelevant,
+  vo.nicht_verordnungsrelevant,
+  'Verworfene Diagnosen der Beispieldaten weichen von der Auswahlregel ab',
+);
+assert.equal(auswahl.output.icd10, vo.icd10, 'Führende Diagnose weicht von der Auswahlregel ab');
+assert.deepEqual(
+  auswahl.diagnose_auswahl,
+  ausgabe.diagnose_auswahl,
+  'diagnose_auswahl der Beispieldaten weicht vom Workflow ab',
+);
+console.log(
+  `✓ Diagnoseauswahl stimmt mit dem Code-Node „Diagnosen auswählen" überein ` +
+    `(${auswahl.diagnose_auswahl.erkannt} erkannt, ${auswahl.diagnose_auswahl.hinweise.length} Hinweise)`,
+);
 
 // --- 2. HTML und JS kennen dieselben Felder --------------------------------
 const html = lies('preview/muster13.html');

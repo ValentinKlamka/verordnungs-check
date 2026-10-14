@@ -39,7 +39,8 @@ Zwei Dinge sind dabei fachlich entscheidend ([`docs/vordruck-muster13.md`](docs/
 ```mermaid
 flowchart LR
   A[Chat: Rezeption] --> B[Verordnung erfassen<br/>LLM + JSON-Schema]
-  B --> C[Fristen berechnen<br/>Code]
+  B --> B2[Diagnosen auswählen<br/>Code]
+  B2 --> C[Fristen berechnen<br/>Code]
   C --> D1[Formal-Prüfer]
   C --> D2[Diagnose-Prüfer]
   C --> D3[Mengen-Prüfer]
@@ -83,9 +84,12 @@ Die Vektorsuche läuft über den OpenAI-Knoten mit umgebogener Base URL.
 Workflows und Wissensbasis:
 
 ```bash
-npm run n8n:import                            # n8n/*.json importieren (deaktiviert die Workflows, danach in der Oberfläche aktivieren)
+npm run n8n:vorbereiten                       # Import-Datei für die lokale Instanz erzeugen (webhookId + Workflow-ID)
+npx n8n import:workflow --input=.n8n/tmp/vier-pruefer-lokal.json
+npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import aktivieren
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
+npm run vorschau:lauf                         # letzten Lauf in die Vorschau holen (preview/)
 ```
 
 Der Ordner `.n8n/` (Datenbank, Credentials, Schlüssel) ist per `.gitignore`
@@ -104,10 +108,11 @@ neu geladen werden, sonst passen die Vektoren nicht mehr zusammen.
 | Ordner | Inhalt |
 |---|---|
 | `n8n/` | Exportierte Workflows (.json) |
+| `scripts/` | Hilfsskripte für die lokale n8n-Instanz (Import vorbereiten) |
 | `preview/` | Vorschau der ausgefüllten Verordnung (Muster 13), Beispieldaten, kein Build |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
-| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`) und für die Vorschau (`node tests/vorschau.test.mjs`) |
+| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`) und für die Vorschau (`node tests/vorschau.test.mjs`), zusammen mit `npm test` |
 | `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13 |
 
 ## Team
@@ -136,5 +141,8 @@ Offen: Ist-Interview mit der Praxis, Business Case, EU-AI-Act-Einordnung, Präse
 Ergänzung 14.10.2026: Die Vorschau der ausgefüllten Verordnung liegt in
 [`preview/`](preview/README.md), die Feldzuordnung (Workflow → Vordruck) und die
 Auswahlregel für die zwei Diagnosen in [`docs/vordruck-muster13.md`](docs/vordruck-muster13.md).
-Der Workflow selbst liefert bisher eine ICD-10-GM und keine Stammdaten; die
-Schema-Erweiterung in n8n steht noch aus (Abschnitt „Stand" in [`preview/README.md`](preview/README.md)).
+
+Ergänzung 15.10.2026: Das Schema `Verordnung` liefert jetzt auch Personalien,
+Kennzeichen und Stammdaten, der Code-Node **Diagnosen auswählen** belegt die zwei
+ICD-10-Zeilen nach dieser Regel. Mit `npm run vorschau:lauf` wird der letzte
+lokale Lauf direkt in die Vorschau geholt (siehe [`preview/`](preview/README.md)).

@@ -59,71 +59,84 @@ Quelle ist das Objekt aus dem Code-Node **Ergebnis zusammenführen**, konkret
 `eingabe.verordnung` (= `vo`). Die Vorschau liest ausschließlich diese Werte;
 fehlt ein Wert, bleibt das Feld leer ([`../preview/muster13.js`](../preview/muster13.js)).
 
-| Vordruckfeld | Pfad in der Workflow-Ausgabe | Status im Workflow |
-|---|---|---|
-| Krankenkasse bzw. Kostenträger | `patient.krankenkasse` | **neu** (heute nur `kostentraeger: "GKV"`) |
-| Name, Vorname des Versicherten | `patient.nachname`, `patient.vorname` | **neu** |
-| geb. am | `patient.geburtsdatum` | **neu** |
-| Kostenträgerkennung | `patient.kostentraegerkennung` | **neu** |
-| Versicherten-Nr. | `patient.versichertennummer` | **neu** |
-| Status | `patient.versichertenstatus` | **neu** |
-| Betriebsstätten-Nr. | `bsnr` | vorhanden |
-| Arzt-Nr. | `lanr` | vorhanden |
-| Datum | `ausstellungsdatum` | vorhanden |
-| Zuzahlung frei / -pflicht | `zuzahlung` (`"frei"` \| `"pflicht"`) | **neu** |
-| Unfallfolgen | `unfallfolgen` | **neu** |
-| BVG / SER | `bvg_ser` | **neu** |
-| Bereichskreuz | `heilmittelbereich` (`"physiotherapie"` …) | **neu** |
-| ICD-10-Code Zeile 1 + Klartext | `icd10`, `icd10_bezeichnung` | vorhanden (nur `icd10`) |
-| ICD-10-Code Zeile 2 + Klartext | `weitere_diagnosen[0].code`, `.bezeichnung` | **neu** |
-| Diagnosegruppe | `diagnosegruppe` | vorhanden |
-| Leitsymptomatik a/b/c | `leitsymptomatik` | vorhanden |
-| patientenindividuelle Leitsymptomatik | Kästchen an, wenn `leitsymptomatik === "x"` oder `leitsymptomatik_freitext` gesetzt; Freitextbox darunter zeigt `leitsymptomatik_freitext` | **neu** |
-| Heilmittelzeilen 1–3 / ergänzendes Heilmittel | `heilmittel[]` (`name`, `einheiten`, `art`), `ergaenzendes_heilmittel` | vorhanden (Array), `ergaenzendes_heilmittel` **neu** |
-| Behandlungseinheiten | `heilmittel[].einheiten` | vorhanden |
-| Therapiebericht | `therapiebericht` | **neu** |
-| Hausbesuch ja/nein | `hausbesuch` | **neu** |
-| Therapiefrequenz | `frequenz` | vorhanden |
-| Dringlicher Behandlungsbedarf | `dringlich` | vorhanden |
-| Therapieziele / Hinweise | `therapieziele_hinweise` | **neu** |
-| IK des Leistungserbringers | – | bleibt leer (trägt der Heilmittelerbringer ein) |
-| Arztstempel / Unterschrift | `arzt.name`, `arzt.fachrichtung`, `arzt.betriebsstaette` | **neu** (heute nur `unterschrift: true`) |
-| nicht auf dem Vordruck | `nicht_verordnungsrelevant[]` | **neu**, dient der Nachvollziehbarkeit in der Vorschau |
+Die Spalte „Ausgabe" nennt, woher der Wert kommt: **Extraktor** = Schema
+`Verordnung` im Node „Verordnung erfassen", **Auswahl** = Code-Node „Diagnosen
+auswählen".
 
-Das Schema `Verordnung` im Workflow-Export und der Prompt von „Verordnung
-erfassen“ sind entsprechend zu erweitern; die Auswahl der zwei Diagnosen
-gehört als **Code-Node** dazu (Abschnitt 5), nicht in die Vorschau.
+| Vordruckfeld | Pfad in der Workflow-Ausgabe | Ausgabe | Status |
+|---|---|---|---|
+| Krankenkasse bzw. Kostenträger | `patient.krankenkasse` | Extraktor | umgesetzt |
+| Name, Vorname des Versicherten | `patient.nachname`, `patient.vorname` | Extraktor | umgesetzt |
+| geb. am | `patient.geburtsdatum` | Extraktor | umgesetzt |
+| Kostenträgerkennung | `patient.kostentraegerkennung` | Extraktor | umgesetzt |
+| Versicherten-Nr. | `patient.versichertennummer` | Extraktor | umgesetzt |
+| Status | `patient.versichertenstatus` | Extraktor | umgesetzt |
+| Betriebsstätten-Nr. | `bsnr` | Extraktor | umgesetzt |
+| Arzt-Nr. | `lanr` | Extraktor | umgesetzt |
+| Datum | `ausstellungsdatum` | Extraktor | umgesetzt |
+| Zuzahlung frei / -pflicht | `zuzahlung` (`"frei"` \| `"pflicht"`) | Extraktor | umgesetzt |
+| Unfallfolgen | `unfallfolgen` | Extraktor | umgesetzt |
+| BVG / SER | `bvg_ser` | Extraktor | umgesetzt |
+| Bereichskreuz | `heilmittelbereich` (`"physiotherapie"`, `"podologie"`, `"ssss"`, `"ergotherapie"`, `"ernaehrung"`) | Extraktor | umgesetzt |
+| ICD-10-Code Zeile 1 + Klartext | `icd10`, `icd10_bezeichnung` | Auswahl | umgesetzt |
+| ICD-10-Code Zeile 2 + Klartext | `weitere_diagnosen[0].code`, `.bezeichnung` | Auswahl | umgesetzt |
+| Diagnosegruppe | `diagnosegruppe` | Extraktor | umgesetzt |
+| Leitsymptomatik a/b/c | `leitsymptomatik` | Extraktor | umgesetzt |
+| patientenindividuelle Leitsymptomatik | Kästchen an, wenn `leitsymptomatik === "x"` oder `leitsymptomatik_freitext` gesetzt; Freitextbox darunter zeigt `leitsymptomatik_freitext` | Extraktor | umgesetzt |
+| Heilmittelzeilen 1–3 / ergänzendes Heilmittel | `heilmittel[]` (`name`, `einheiten`, `art`), `ergaenzendes_heilmittel` | Extraktor | umgesetzt |
+| Behandlungseinheiten | `heilmittel[].einheiten` | Extraktor | umgesetzt |
+| Therapiebericht | `therapiebericht` | Extraktor | umgesetzt |
+| Hausbesuch ja/nein | `hausbesuch` | Extraktor | umgesetzt |
+| Therapiefrequenz | `frequenz` | Extraktor | umgesetzt |
+| Dringlicher Behandlungsbedarf | `dringlich` | Extraktor | umgesetzt |
+| Therapieziele / Hinweise | `therapieziele_hinweise` | Extraktor | umgesetzt |
+| IK des Leistungserbringers | – | – | bleibt leer (trägt der Heilmittelerbringer ein) |
+| Arztstempel / Unterschrift | `arzt.name`, `arzt.fachrichtung`, `arzt.betriebsstaette` | Extraktor | umgesetzt |
+| nicht auf dem Vordruck | `nicht_verordnungsrelevant[]` | Auswahl | umgesetzt, mit Begründung je Code |
+
+Zusätzlich, ohne Entsprechung auf dem Vordruck: `diagnosen[]` (alle erkannten
+Codes mit `anlass`-Kennzeichen, Grundlage der Auswahl) und `diagnose_auswahl`
+(führende und zweite Diagnose, Anzahl erkannter Codes, Hinweise zum fachlichen
+Prüfen). Beides landet im Prüfprotokoll (`pruefungen.eingabe`,
+`pruefungen.diagnose_auswahl`, siehe [`../supabase/migrations/002_diagnose_auswahl.sql`](../supabase/migrations/002_diagnose_auswahl.sql)).
 
 ## 5. Auswahlregel für die zwei Diagnosen
 
 Auf den Vordruck passen **zwei** ICD-10-GM-Codes. Erkannt werden im Freitext
-häufig mehr. Vorschlag für eine nachvollziehbare, testbare Regel:
+häufig mehr. Die Regel ist als Code-Node **Diagnosen auswählen** umgesetzt –
+deterministisch, damit sie prüfbar bleibt
+([`../tests/diagnosen.test.mjs`](../tests/diagnosen.test.mjs)):
 
-1. **Sammeln:** alle Diagnosen mit ICD-10-GM-Code aus dem Freitext.
+1. **Sammeln:** alle Diagnosen mit ICD-10-GM-Code aus dem Freitext, in der
+   Reihenfolge ihrer Nennung, ohne Doppelte.
 2. **Verordnungsbezug prüfen:** Ein Code ist verordnungsrelevant, wenn er zur
    **Diagnosegruppe** des Heilmittels passt (Zuordnung ICD-Bereich → WS/EX ist
-   bereits im Code-Node `Fristen berechnen` vorhanden) **oder** auf der
-   KBV-Diagnoseliste steht.
+   bereits im Code-Node `Fristen berechnen` vorhanden). Ob eine Diagnose
+   zusätzlich über die **KBV-Diagnoseliste** den besonderen Verordnungsbedarf
+   begründet, prüft der **Diagnose-Prüfer** per RAG – der Code-Node kann das
+   nicht, solange die Liste nur als Text vorliegt (Abschnitt 6).
 3. **Reihenfolge festlegen:**
    - **Zeile 1 = führende Diagnose:** der Code, der Anlass und Gegenstand der
      Verordnung ist (der zum Heilmittel passende, in der Regel der im Freitext
-     zuerst genannte Beschwerdegrund).
-   - **Zeile 2 = zweite Diagnose:** bevorzugt ein Code der **Diagnoseliste**
-     (langfristiger / besonderer Verordnungsbedarf), weil genau dafür die
-     zweite Zeile vorgesehen ist; sonst der zweitwichtigste
-     verordnungsrelevante Code.
+     zuerst genannte Beschwerdegrund). Passt der Anlass-Code nicht zur
+     Diagnosegruppe, führt der erste passende Code und der Node weist darauf hin.
+   - **Zeile 2 = zweite Diagnose:** der nächste passende Code in
+     Nennungsreihenfolge – im Regelfall die Diagnose, die den besonderen
+     Verordnungsbedarf begründet.
 4. **Alles Übrige** kommt nach `nicht_verordnungsrelevant` mit Begründung –
    sichtbar in der Vorschau, damit die Rezeption die Auswahl prüfen kann. Es
    wird nichts stillschweigend verworfen.
-5. **Gleichstand:** Passen mehr als zwei Codes gleich gut, schlägt das System
-   zwei vor und markiert die Alternativen als Hinweis („fachlich prüfen“).
+5. **Gleichstand:** Passen mehr als zwei Codes gleich gut, stehen die
+   Alternativen als Hinweis („fachlich prüfen") in `diagnose_auswahl.hinweise`
+   und in der Vorschau; die Rezeption entscheidet.
 
-Beispiel aus dem Beispielfall ([`../preview/`](../preview/)):
+Beispiel aus dem Beispielfall ([`../preview/`](../preview/)) – dieselbe Auswahl
+liefert der Code-Node:
 
 | Code | Bezeichnung | Entscheidung |
 |---|---|---|
 | M54.4 | Lumboischialgie | **Zeile 1** – Anlass der Verordnung, Diagnosegruppe WS passt zu KG |
-| M51.1 | Lumbale Bandscheibenschäden mit Radikulopathie | **Zeile 2** – begründet die Therapie mit, gleiche Region |
+| M51.1 | Lumbale Bandscheibenschäden mit Radikulopathie | **Zeile 2** – begründet die Therapie mit, gleiche Region; steht auf der Diagnoseliste (vom Diagnose-Prüfer per RAG bestätigt) |
 | M17.1 | Sonstige primäre Gonarthrose | verworfen – andere Körperregion |
 | I10.9 | Essentielle Hypertonie | verworfen – internistische Begleiterkrankung ohne Heilmittelbezug |
 
@@ -139,6 +152,8 @@ Beispiel aus dem Beispielfall ([`../preview/`](../preview/)):
 3. **Diagnoseliste maschinenlesbar:** Für Zeile 2 und den Hinweis „besonderer
    Verordnungsbedarf“ müsste die KBV-Diagnoseliste strukturiert vorliegen
    (Code, Diagnosegruppe, erforderlicher zweiter Code) – bisher liegt sie nur
-   als Text in der Wissensbasis.
+   als Text in der Wissensbasis. Solange prüft der Diagnose-Prüfer den
+   besonderen Verordnungsbedarf per RAG, und der Code-Node belegt Zeile 2 nach
+   Nennungsreihenfolge.
 4. **Druck:** Die Vorschau ist für A5 eingerichtet (`@page`). Ein echtes
    Formular-Overlay wird erst mit dem amtlichen Druckstück belastbar.

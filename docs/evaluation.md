@@ -82,6 +82,8 @@ Bessere Prompts haben das nur teilweise behoben: Von v2 auf v3 sank der Fehler v
 
 `tests/fakten.test.mjs` prüft den Code-Knoten „Fristen berechnen“ direkt aus dem Workflow-Export: Fristgrenzen (28 und 14 Tage, jeweils genau an der Grenze), Unterbrechung mit und ohne Grund, LANR-Format und die ICD-Zuordnung.
 
+`tests/diagnosen.test.mjs` prüft den Code-Knoten „Diagnosen auswählen“: die Auswahl der zwei ICD-10-Zeilen für den Vordruck, die Begründung verworfener Diagnosen und die Hinweise bei Zweifelsfällen (Regel: [`vordruck-muster13.md`](vordruck-muster13.md), Abschnitt 5).
+
 ```bash
 node tests/fakten.test.mjs   # 13/13 Tests bestanden
 ```

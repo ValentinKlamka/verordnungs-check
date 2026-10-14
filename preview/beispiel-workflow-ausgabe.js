@@ -2,7 +2,8 @@
 //
 // Aufbau = Objekt aus dem Code-Node „Ergebnis zusammenführen":
 //   verordnung_ref, eingabe.verordnung, eingabe.fakten, gesamtstatus,
-//   absetzungsrisiko_eur, zusammenfassung, dauer_ms, freigabe, befunde, antwort
+//   absetzungsrisiko_eur, zusammenfassung, dauer_ms, freigabe,
+//   diagnose_auswahl, befunde, antwort
 //
 // Die Datei ist bewusst eine JS-Datei (kein JSON): Aus dem Dateisystem heraus
 // (file://) blockiert der Browser fetch() auf lokale Dateien, die Vorschau ließe
@@ -36,6 +37,23 @@ window.BEISPIEL_WORKFLOW_AUSGABE = {
       bvg_ser: false,
       // --- Heilmittelbereich (genau eine Auswahl) ---
       heilmittelbereich: "physiotherapie",
+      // --- Diagnosen aus dem Freitext, so wie der Extraktor sie erkennt ---
+      // Ein Code-Node wählt daraus die zwei Zeilen des Vordrucks aus (Regel in
+      // docs/vordruck-muster13.md, Abschnitt 5).
+      diagnosen: [
+        { code: "M54.4", bezeichnung: "Lumboischialgie", anlass: true },
+        {
+          code: "M51.1",
+          bezeichnung: "Lumbale und sonstige Bandscheibenschäden mit Radikulopathie",
+          anlass: false,
+        },
+        { code: "M17.1", bezeichnung: "Sonstige primäre Gonarthrose", anlass: false },
+        {
+          code: "I10.9",
+          bezeichnung: "Essentielle Hypertonie, nicht näher bezeichnet",
+          anlass: false,
+        },
+      ],
       // --- Behandlungsrelevante Diagnose(n): zwei ICD-10-GM-Zeilen ---
       icd10: "M54.4",
       icd10_bezeichnung: "Lumboischialgie",
@@ -104,6 +122,16 @@ window.BEISPIEL_WORKFLOW_AUSGABE = {
   zusammenfassung: "🟢 Verordnung in Ordnung",
   dauer_ms: 23800,
   freigabe: "offen",
+  diagnose_auswahl: {
+    fuehrend: { code: "M54.4", bezeichnung: "Lumboischialgie", anlass: true },
+    zweite: {
+      code: "M51.1",
+      bezeichnung: "Lumbale und sonstige Bandscheibenschäden mit Radikulopathie",
+      anlass: false,
+    },
+    erkannt: 4,
+    hinweise: [],
+  },
   befunde: [
     {
       agent: "formal",
