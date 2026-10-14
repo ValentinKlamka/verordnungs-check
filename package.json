@@ -1,0 +1,17 @@
+{
+  "name": "verordnungs-check",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KI-gestützte Prüfung ärztlicher Heilmittelverordnungen (Physiotherapie) – n8n-Workflows, Supabase, Vorschau",
+  "scripts": {
+    "n8n": "n8n start",
+    "n8n:import": "n8n import:workflow --separate --input=./n8n",
+    "n8n:export": "n8n export:workflow --all --separate --output=./n8n",
+    "n8n:import:credentials": "n8n import:credentials --separate --input=./.n8n/credentials",
+    "n8n:execute": "n8n execute",
+    "test": "node tests/fakten.test.mjs && node tests/vorschau.test.mjs"
+  },
+  "devDependencies": {
+    "n8n": "2.43.5"
+  }
+}

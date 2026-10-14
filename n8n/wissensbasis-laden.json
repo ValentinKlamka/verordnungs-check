@@ -75,7 +75,10 @@
     },
     {
       "parameters": {
-        "options": {}
+        "model": "google/gemini-embedding-001",
+        "options": {
+          "dimensions": 1536
+        }
       },
       "id": "1a8816d6-5501-41c3-b327-a9953b578430",
       "name": "OpenAI Embeddings",
@@ -87,7 +90,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "name": "OpenAI account"
+          "name": "OpenRouter (OpenAI-kompatibel)"
         }
       }
     },

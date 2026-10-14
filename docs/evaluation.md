@@ -76,7 +76,7 @@ Bessere Prompts haben das nur teilweise behoben: Von v2 auf v3 sank der Fehler v
 | 2 | 10–20 anonymisierte echte Verordnungen aus der Praxis als Testfälle (mit Einwilligung) | Realistische Fehlerarten |
 | 3 | KBV-Diagnoseliste strukturiert laden (Code, Gruppe, Sekundärcode) statt nur als Text | Hinweis „besonderer Verordnungsbedarf“ vollständig und korrekt |
 | 4 | ICD-Zuordnung im Code um weitere Diagnosegruppen erweitern | Weniger Abhängigkeit vom LLM |
-| 5 | Kostenmessung über das OpenAI-Dashboard statt Schätzung | Belastbarer Business Case |
+| 5 | Kostenmessung über das OpenRouter-Dashboard statt Schätzung | Belastbarer Business Case |
 
 ## Automatische Tests für den Code-Anteil
 

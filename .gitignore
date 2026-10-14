@@ -2,3 +2,6 @@
 *.env
 .DS_Store
 node_modules/
+
+# Lokale n8n-Instanz (Datenbank, Credentials, Protokolle)
+.n8n/

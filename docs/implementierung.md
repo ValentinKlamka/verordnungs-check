@@ -15,7 +15,7 @@
 | Faktor | Bezug zu unserem Scope |
 |---|---|
 | **Form des Problems** | Eine ausgelöste Sequenz mit einem klaren Trigger (Verordnung kommt an) und einem festen Ablauf. Konversation braucht es nur für die Eingabe. Prüfregeln sind teils sprachlich (Regelwerk finden und anwenden), teils reine Rechnung. Deshalb Hybrid. |
-| **Integrationen** | Nur zwei Systeme: OpenAI (Modell, Embeddings) und Supabase (Vektorspeicher, Protokoll, Historie). Für beide gibt es native n8n-Nodes. Die Praxissoftware ist bewusst ausgeschlossen. |
+| **Integrationen** | Nur zwei Systeme: OpenRouter (Modell, Embeddings) und Supabase (Vektorspeicher, Protokoll, Historie). Für beide gibt es native n8n-Nodes. Die Praxissoftware ist bewusst ausgeschlossen. |
 | **Deployment** | n8n Cloud (vorhandene Instanz), Supabase in der EU-Region Frankfurt. Die Rezeption erreicht das System über den n8n-Chat, der erst mit aktiver Anmeldung veröffentlicht wird. Quelle und Evidenz liegen auf GitHub. |
 | **Wartbarkeit** | Regeln stecken in wenigen, getesteten Code-Nodes (`tests/fakten.test.mjs`). Ändert sich ein Regelwerk, wird die Wissensbasis per Knopfdruck neu geladen. Prompts liegen im Workflow-Export und sind versioniert. |
 | **Skill-Fit** | n8n, Supabase und RAG kennt das Team aus dem MSIT-Programm. Das Risiko liegt im JavaScript der Code-Nodes, deshalb ist jeder Code-Node mit Tests abgesichert. |

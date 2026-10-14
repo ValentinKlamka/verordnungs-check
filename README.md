@@ -55,8 +55,42 @@ Details: [docs/architektur.md](docs/architektur.md)
 ## Technik
 
 - **n8n** – Orchestrierung, Chat-Oberfläche, vier AI-Agenten
-- **OpenAI** – `gpt-4.1-mini` für die Agenten, `text-embedding-3-small` für die Vektorsuche
+- **OpenRouter** – `google/gemini-3.1-flash-lite` für die Agenten, `google/gemini-embedding-001` (1536 Dimensionen) für die Vektorsuche
 - **Supabase** – PostgreSQL mit pgvector für die Wissensbasis und das Prüfprotokoll (EU-Region Frankfurt)
+
+### n8n lokal starten (ohne Cloud-Zugang)
+
+n8n läuft als npm-Paket mit, eine eigene Installation ist nicht nötig:
+
+```bash
+npm install                                   # installiert n8n aus den devDependencies
+cp .env.example .env                          # Werte eintragen, u. a. N8N_ENCRYPTION_KEY erzeugen
+npm run n8n                                   # Oberfläche auf http://127.0.0.1:5678
+```
+
+Beim ersten Start in der Oberfläche anmelden, dann die Zugangsdaten anlegen
+(Credentials → Add credential):
+
+| Credential | Typ | Inhalt |
+|---|---|---|
+| OpenRouter | OpenRouter | API-Key von openrouter.ai |
+| OpenRouter (OpenAI-kompatibel) | OpenAI | API-Key wie oben, Base URL `https://openrouter.ai/api/v1`, zusätzlich Option *Dimensions* = `1536` |
+| Supabase Verordnungs_check | Supabase | Host und Secret Key des Projekts |
+
+Zwei Credentials sind nötig, weil n8n keinen OpenRouter-Embedding-Knoten kennt:
+Die Vektorsuche läuft über den OpenAI-Knoten mit umgebogener Base URL.
+
+Workflows und Wissensbasis:
+
+```bash
+npm run n8n:import                            # n8n/*.json importieren (deaktiviert die Workflows, danach in der Oberfläche aktivieren)
+npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
+npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
+```
+
+Der Ordner `.n8n/` (Datenbank, Credentials, Schlüssel) ist per `.gitignore`
+ausgenommen. Nach einem Wechsel des Embedding-Modells muss die Wissensbasis
+neu geladen werden, sonst passen die Vektoren nicht mehr zusammen.
 
 ## Wissensquellen (frei zugänglich)
 
