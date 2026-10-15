@@ -96,6 +96,39 @@ Der Ordner `.n8n/` (Datenbank, Credentials, Schlüssel) ist per `.gitignore`
 ausgenommen. Nach einem Wechsel des Embedding-Modells muss die Wissensbasis
 neu geladen werden, sonst passen die Vektoren nicht mehr zusammen.
 
+### n8n in einer bestehenden Instanz (z. B. Docker)
+
+Für eine schon laufende Instanz erzeugt `npm run n8n:vorbereiten` zusätzlich ein
+Paar aus Workflow und Credentials unter `.n8n/tmp/import-fremdinstanz/`. Das ist
+nötig, weil der CLI-Import bei älteren n8n-Versionen (getestet mit 2.20.8) IDs in
+der Datei erwartet und Credentials nur über die ID auflöst – der Import über die
+Oberfläche erledigt beides selbst:
+
+```bash
+npm run n8n:vorbereiten
+docker cp .n8n/tmp/import-fremdinstanz/credentials.json  <container>:/tmp/
+docker cp .n8n/tmp/import-fremdinstanz/vier-pruefer.json <container>:/tmp/
+docker exec <container> n8n import:credentials --input=/tmp/credentials.json
+docker exec <container> n8n import:workflow    --input=/tmp/vier-pruefer.json
+docker exec <container> n8n update:workflow --id=<workflow-id> --active=true
+docker restart <container>
+```
+
+Danach antwortet der Chat unter `http://localhost:5678/webhook/verordnungs-check/chat`
+(POST mit `{"action":"sendMessage","sessionId":"…","chatInput":"…"}`) oder über die
+Chat-Ansicht im Editor. Die Wissensbasis liegt in Supabase und muss nur geladen
+werden, wenn die Instanz auf ein anderes Projekt zeigt.
+
+Die Vorschau liest die Datenbank der Instanz. Datenordner herausholen (Container
+vorher stoppen, damit die WAL-Datei mitkommt) und den Pfad mitgeben:
+
+```bash
+docker stop <container>
+docker cp <container>:/home/node/.n8n/. .n8n/docker
+docker start <container>
+npm run vorschau:lauf -- --db=.n8n/docker/database.sqlite
+```
+
 ## Wissensquellen (frei zugänglich)
 
 - Heilmittel-Richtlinie des G-BA, Fassung in Kraft seit 05.08.2025

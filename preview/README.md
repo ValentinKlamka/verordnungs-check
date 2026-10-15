@@ -35,7 +35,9 @@ Das Skript `aus-n8n-lauf.mjs` liest die SQLite-Datenbank der lokalen Instanz
 erfolgreichen Prüfung und schreibt sie nach `letzter-lauf.js`. Danach zeigt die
 Vorschau diesen Fall – ein Neuladen der Seite genügt. Die Datei steht in
 `.gitignore`, weil sie den zuletzt geprüften Fall enthält (im Prototyp nur
-synthetische Daten). Liegt die Instanz woanders, hilft `--db=Pfad/zu/database.sqlite`.
+synthetische Daten). Liegt die Instanz woanders (z. B. in Docker), den
+Datenordner herausgeholt und den Pfad mitgeben: `--db=Pfad/zu/database.sqlite`
+(Abschnitt „n8n in einer bestehenden Instanz" in [`../README.md`](../README.md)).
 
 Schaltflächen: **Letzter n8n-Lauf** (nur aktiv, wenn ein Lauf vorliegt),
 **Beispielfall** (synthetischer Fall), **Ansicht 100 % / 150 %**

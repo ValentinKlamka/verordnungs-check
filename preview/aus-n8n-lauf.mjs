@@ -56,20 +56,25 @@ if (!existsSync(pfad)) {
 }
 
 const db = new DatabaseSync(pfad, { readOnly: true });
-const workflow = db
-  .prepare("SELECT id, name FROM workflow_entity WHERE name LIKE '%Vier Prüfer%' LIMIT 1")
-  .get();
-if (!workflow) {
-  console.error('Der Workflow „Verordnungs-Check – Vier Prüfer" ist in dieser Instanz nicht vorhanden.');
-  process.exit(1);
-}
 
-const ausfuehrungen = db
-  .prepare(
-    'SELECT e.id, e.stoppedAt, d.data FROM execution_entity e JOIN execution_data d ON d.executionId = e.id ' +
-      "WHERE e.workflowId = ? AND e.status = 'success' ORDER BY e.id DESC LIMIT 10",
-  )
-  .all(workflow.id);
+// Erfolgreiche Ausführungen des Prüf-Workflows. In einer geteilten Instanz kann
+// es mehrere Workflows mit diesem Namen geben (z. B. eine ältere Kopie) – deshalb
+// werden alle Treffer berücksichtigt. Findet sich dort keine Ausführung, wird die
+// jüngste erfolgreiche Ausführung überhaupt angesehen (umbenannter Workflow).
+const ausfuehrungenLesen = (bedingung, grenze) =>
+  db
+    .prepare(
+      'SELECT e.id, e.stoppedAt, d.data FROM execution_entity e JOIN execution_data d ON d.executionId = e.id ' +
+        bedingung +
+        ` ORDER BY e.id DESC LIMIT ${grenze}`,
+    )
+    .all();
+
+let ausfuehrungen = ausfuehrungenLesen(
+  "WHERE e.status = 'success' AND e.workflowId IN (SELECT id FROM workflow_entity WHERE name LIKE '%Vier Prüfer%')",
+  25,
+);
+if (ausfuehrungen.length === 0) ausfuehrungen = ausfuehrungenLesen("WHERE e.status = 'success'", 25);
 
 let treffer = null;
 for (const zeile of ausfuehrungen) {
@@ -86,6 +91,7 @@ for (const zeile of ausfuehrungen) {
 
 if (!treffer) {
   console.error('Keine erfolgreiche Prüfung gefunden. Im n8n-Chat eine Verordnung prüfen und erneut aufrufen.');
+  console.error('Hinweis: Bei einer Docker-Instanz zeigt --db= auf die Kopie der database.sqlite (siehe preview/README.md).');
   process.exit(1);
 }
 
