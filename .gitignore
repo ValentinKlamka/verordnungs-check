@@ -6,5 +6,3 @@ node_modules/
 # Lokale n8n-Instanz (Datenbank, Credentials, Protokolle)
 .n8n/
 
-# Aus einem lokalen n8n-Lauf erzeugt (enthält den zuletzt geprüften Fall)
-preview/letzter-lauf.js

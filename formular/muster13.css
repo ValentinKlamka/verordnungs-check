@@ -432,3 +432,63 @@ body {
     box-shadow: none;
   }
 }
+
+/* --------------------------------------------------------- Eingabefelder */
+/* Die Wertfelder des Vordrucks werden im Browser zu Eingaben. Optik und
+   Position bleiben die des Papiers, damit die Rezeption wie gewohnt arbeitet. */
+
+.sheet .eingabe {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: #10233f;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.sheet textarea.eingabe {
+  resize: none;
+  overflow: hidden;
+}
+
+.sheet .eingabe:hover {
+  background: #f1f6ff;
+}
+
+.sheet .eingabe:focus {
+  outline: 1px dashed #1f6feb;
+  outline-offset: 1px;
+  background: #fffdf0;
+}
+
+.sheet .eingabe::placeholder {
+  color: #9aa7b8;
+  font-weight: 400;
+}
+
+/* ------------------------------------------------------------- Ergebnisse */
+
+button.primary {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+}
+
+.panel pre.markdown {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  max-height: 20rem;
+  overflow: auto;
+}
+
+.panel .muted {
+  color: var(--muted);
+}

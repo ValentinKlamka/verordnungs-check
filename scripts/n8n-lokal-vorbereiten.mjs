@@ -69,16 +69,26 @@ if (!existsSync(QUELLE_CREDENTIALS)) {
 
 mkdirSync(ORDNER_FREMD, { recursive: true });
 
+// IDs einmalig erzeugen und merken: Workflow und Credentials müssen bei jedem
+// erneuten Import dieselben IDs behalten, sonst entstehen Kopien und die
+// Credential-Verweise im Workflow zeigen ins Leere.
+const idDatei = `${ORDNER_FREMD}/ids.json`;
+const ids = existsSync(idDatei) ? JSON.parse(readFileSync(idDatei, 'utf8')) : { workflow: null, credentials: {} };
+ids.credentials ??= {};
+
 const credentials = JSON.parse(readFileSync(QUELLE_CREDENTIALS, 'utf8'));
 const idNachTypUndName = new Map();
 for (const c of credentials) {
-  c.id = neueId();
-  idNachTypUndName.set(`${c.type}|${c.name}`, c.id);
+  const schluessel = `${c.type}|${c.name}`;
+  ids.credentials[schluessel] ??= neueId();
+  c.id = ids.credentials[schluessel];
+  idNachTypUndName.set(schluessel, c.id);
 }
 writeFileSync(`${ORDNER_FREMD}/credentials.json`, JSON.stringify(credentials, null, 2) + '\n');
 
 const fremd = lies(QUELLE_WORKFLOW);
-fremd.id = neueId();
+ids.workflow ??= neueId();
+fremd.id = ids.workflow;
 fremd.nodes.find((n) => n.type.includes('chatTrigger')).webhookId = WEBHOOK_ID_FREMD;
 for (const n of fremd.nodes) {
   for (const [typ, ref] of Object.entries(n.credentials ?? {})) {
@@ -88,7 +98,9 @@ for (const n of fremd.nodes) {
   }
 }
 writeFileSync(`${ORDNER_FREMD}/vier-pruefer.json`, JSON.stringify(fremd, null, 2) + '\n');
+writeFileSync(idDatei, JSON.stringify(ids, null, 2) + '\n');
 
 console.log(`${ORDNER_FREMD}/credentials.json und vier-pruefer.json geschrieben`);
 console.log(`  Workflow-ID: ${fremd.id}  (n8n update:workflow --id=${fremd.id} --active=true)`);
 console.log(`  Chat-Adresse nach der Aktivierung: /webhook/${WEBHOOK_ID_FREMD}/chat`);
+console.log(`  IDs gemerkt in ${idDatei} – bei erneutem Import bleiben sie gleich.`);

@@ -10,8 +10,8 @@
     "n8n:export": "n8n export:workflow --all --separate --output=./n8n",
     "n8n:import:credentials": "n8n import:credentials --separate --input=./.n8n/credentials",
     "n8n:execute": "n8n execute",
-    "vorschau:lauf": "node preview/aus-n8n-lauf.mjs",
-    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/vorschau.test.mjs"
+    "formular": "node scripts/formular-server.mjs",
+    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/formular.test.mjs"
   },
   "devDependencies": {
     "n8n": "2.43.5"

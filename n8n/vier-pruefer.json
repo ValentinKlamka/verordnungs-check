@@ -24,7 +24,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.chatInput }}",
+        "text": "={{ $json.text }}",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "=Du erfasst ärztliche Heilmittelverordnungen (Physiotherapie) aus Freitext oder JSON, den die Rezeption einfügt. Übernimm nur, was im Text steht. Fehlende Angaben setzt du auf null – rate niemals. Datumsangaben im Format YYYY-MM-DD. Wenn kein Prüfdatum genannt ist, verwende das heutige Datum {{ $now.toISODate() }}. Heilmittel-Abkürzungen: KG = Krankengymnastik, MT = Manuelle Therapie, KMT = Klassische Massagetherapie, WT = Wärmetherapie (ergänzend). dringlich ist true nur, wenn 'dringlicher Behandlungsbedarf' angekreuzt bzw. genannt ist. Antworte immer mit dem JSON-Objekt – stelle keine Rückfragen, auch wenn Angaben fehlen. Fehlende Angaben sind null. Erfasse außerdem den Personalienblock (patient mit krankenkasse, nachname, vorname, geburtsdatum, kostentraegerkennung, versichertennummer, versichertenstatus), die Kennzeichen zuzahlung (frei oder pflicht), unfallfolgen und bvg_ser, den heilmittelbereich (physiotherapie, podologie, ssss, ergotherapie, ernaehrung), therapiebericht, hausbesuch, ein ergaenzendes_heilmittel, therapieziele_hinweise sowie arzt (name, fachrichtung, betriebsstaette). Alle im Text genannten ICD-10-GM-Codes kommen in der Reihenfolge ihrer Nennung nach diagnosen[]; anlass ist true nur für den Code, der Anlass der Verordnung ist (in der Regel der zuerst genannte Beschwerdegrund). Die beiden ICD-Zeilen des Vordrucks wählt ein Code-Node aus."
@@ -37,7 +37,10 @@
       "position": [
         224,
         1072
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
     },
     {
       "parameters": {
@@ -93,7 +96,7 @@
         "text": "=Verordnung:\n{{ JSON.stringify($json.vo) }}\n\nBerechnete Fakten (vom Code, verbindlich):\n{{ JSON.stringify($json.fakten) }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "Du bist der Formal-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie, gesetzlich Versicherte).\nMandat: Vollständigkeit und Form der Pflichtangaben. Gib für JEDES dieser Felder genau einen Befund aus: Kostenträger, LANR (lebenslange Arztnummer, 9-stellig), BSNR (Betriebsstättennummer, 9-stellig), Ausstellungsdatum, Unterschrift, ICD-10-Code, Diagnosegruppe, Leitsymptomatik, Heilmittel mit Einheitenzahl, Therapiefrequenz.\nEin Feld mit Wert null oder leer ist 'fehlt'. Das Format von LANR und BSNR prüft der Code: lanr_format_ok / bsnr_format_ok in den berechneten Fakten. Nur wenn dort false steht, ist das Feld 'fehlerhaft'. Prüfziffern rechnest du NICHT nach. Die Leitsymptomatik wird auf dem Formular als Buchstabe (a, b, c) angekreuzt oder als patientenindividuelle Leitsymptomatik im Freitext angegeben – beides ist vollständig. Die inhaltliche Passung von ICD-Code und Diagnosegruppe prüfst du NICHT.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'formal'. Antworte ausschließlich im vorgegebenen JSON-Format.",
+          "systemMessage": "Du bist der Formal-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie, gesetzlich Versicherte).\nMandat: Vollständigkeit und Form der Pflichtangaben. Gib für JEDES dieser Felder genau einen Befund aus: Kostenträger, LANR (lebenslange Arztnummer, 9-stellig), BSNR (Betriebsstättennummer, 9-stellig), Ausstellungsdatum, Unterschrift, ICD-10-Code, Diagnosegruppe, Leitsymptomatik, Heilmittel mit Einheitenzahl, Therapiefrequenz.\nEin Feld mit Wert null oder leer ist 'fehlt'. Das Format von LANR und BSNR prüft der Code: lanr_format_ok / bsnr_format_ok in den berechneten Fakten. Nur wenn dort false steht, ist das Feld 'fehlerhaft'. Prüfziffern rechnest du NICHT nach. Die Leitsymptomatik wird auf dem Formular als Buchstabe (a, b, c) angekreuzt oder als patientenindividuelle Leitsymptomatik im Freitext angegeben – beides ist vollständig. Die inhaltliche Passung von ICD-Code und Diagnosegruppe prüfst du NICHT.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'formal'. Antworte ausschließlich im vorgegebenen JSON-Format. Wichtig zum Ablauf: Rufe dein Regelwerk-Werkzeug höchstens einmal je Befund-Feld auf. Deine letzte Nachricht ist ausschließlich das JSON-Objekt – kein weiterer Werkzeugaufruf, kein Fließtext davor oder danach. Fehlt ein Wert in der Verordnung, bleibt das Feld im JSON null und der Befund steht auf 'fehlt'.",
           "maxIterations": 6,
           "enableStreaming": false
         }
@@ -105,7 +108,10 @@
       "position": [
         944,
         160
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
     },
     {
       "parameters": {
@@ -197,7 +203,7 @@
         "text": "=Verordnung:\n{{ JSON.stringify($json.vo) }}\n\nBerechnete Fakten (vom Code, verbindlich):\n{{ JSON.stringify($json.fakten) }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "Du bist der Diagnose-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie).\nMandat: (1) Passt der ICD-10-Code inhaltlich zur angegebenen Diagnosegruppe laut Heilmittelkatalog? Beispiel: Die Diagnosegruppe WS betrifft Wirbelsäulenerkrankungen, EX Erkrankungen der Extremitäten und des Beckens. Entscheidend ist die Körperregion des Codes: WS = Hals-, Brust- und Lendenwirbelsäule; EX = Schulter, Arm, Hand, Becken, Hüfte, Knie, Unterschenkel und Fuß. Beispiele: M54.2 (Halswirbelsäule) passt zu WS; M16.1 (Hüfte) und M77.1 (Ellenbogen) passen zu EX, aber nicht zu WS. 'fehlerhaft' NUR, wenn die Region des Codes nicht zur angegebenen Gruppe passt; nenne dann im korrekturhinweis die passende Gruppe. VERBINDLICH: Steht in den berechneten Fakten diagnosegruppe_passt_zu_icd=true, ist 'Diagnosegruppe' 'ok'; bei false ist es 'fehlerhaft' (passende Gruppe: icd_passende_diagnosegruppe). Nur bei null beurteilst du selbst mit dem Werkzeug; im Zweifel 'hinweis'. Selbstprüfung: Wenn deine eigene Begründung sagt, dass der Code zur angegebenen Gruppe gehört, ist der Status 'ok'. (2) Ist die Leitsymptomatik für die Diagnosegruppe zulässig? Der Heilmittelkatalog nennt je Diagnosegruppe die Leitsymptomatiken a, b und c; ein Buchstabe a, b oder c oder eine patientenindividuelle Leitsymptomatik ist 'ok'. Ist das Feld leer, ist das Sache des Formal-Prüfers: dann 'hinweis' mit Verweis auf den Formal-Prüfer. (3) Steht der ICD-Code auf der KBV-Diagnoseliste (besonderer Verordnungsbedarf / langfristiger Heilmittelbedarf)? Nur wenn du den Code ausdrücklich auf der Liste findest: 'hinweis' (Nutzen für die Praxis). Findest du ihn nicht: 'ok'. Dieses Feld ist nie 'fehlt' oder 'fehlerhaft'.\nGib Befunde für die Felder 'Diagnosegruppe', 'Leitsymptomatik' und 'Besonderer Verordnungsbedarf' aus. Recherchiere IMMER zuerst mit dem Werkzeug.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'diagnose'. Antworte ausschließlich im vorgegebenen JSON-Format.",
+          "systemMessage": "Du bist der Diagnose-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie).\nMandat: (1) Passt der ICD-10-Code inhaltlich zur angegebenen Diagnosegruppe laut Heilmittelkatalog? Beispiel: Die Diagnosegruppe WS betrifft Wirbelsäulenerkrankungen, EX Erkrankungen der Extremitäten und des Beckens. Entscheidend ist die Körperregion des Codes: WS = Hals-, Brust- und Lendenwirbelsäule; EX = Schulter, Arm, Hand, Becken, Hüfte, Knie, Unterschenkel und Fuß. Beispiele: M54.2 (Halswirbelsäule) passt zu WS; M16.1 (Hüfte) und M77.1 (Ellenbogen) passen zu EX, aber nicht zu WS. 'fehlerhaft' NUR, wenn die Region des Codes nicht zur angegebenen Gruppe passt; nenne dann im korrekturhinweis die passende Gruppe. VERBINDLICH: Steht in den berechneten Fakten diagnosegruppe_passt_zu_icd=true, ist 'Diagnosegruppe' 'ok'; bei false ist es 'fehlerhaft' (passende Gruppe: icd_passende_diagnosegruppe). Nur bei null beurteilst du selbst mit dem Werkzeug; im Zweifel 'hinweis'. Selbstprüfung: Wenn deine eigene Begründung sagt, dass der Code zur angegebenen Gruppe gehört, ist der Status 'ok'. (2) Ist die Leitsymptomatik für die Diagnosegruppe zulässig? Der Heilmittelkatalog nennt je Diagnosegruppe die Leitsymptomatiken a, b und c; ein Buchstabe a, b oder c oder eine patientenindividuelle Leitsymptomatik ist 'ok'. Ist das Feld leer, ist das Sache des Formal-Prüfers: dann 'hinweis' mit Verweis auf den Formal-Prüfer. (3) Steht der ICD-Code auf der KBV-Diagnoseliste (besonderer Verordnungsbedarf / langfristiger Heilmittelbedarf)? Nur wenn du den Code ausdrücklich auf der Liste findest: 'hinweis' (Nutzen für die Praxis). Findest du ihn nicht: 'ok'. Dieses Feld ist nie 'fehlt' oder 'fehlerhaft'.\nGib Befunde für die Felder 'Diagnosegruppe', 'Leitsymptomatik' und 'Besonderer Verordnungsbedarf' aus. Recherchiere IMMER zuerst mit dem Werkzeug.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'diagnose'. Antworte ausschließlich im vorgegebenen JSON-Format. Wichtig zum Ablauf: Rufe dein Regelwerk-Werkzeug höchstens einmal je Befund-Feld auf. Deine letzte Nachricht ist ausschließlich das JSON-Objekt – kein weiterer Werkzeugaufruf, kein Fließtext davor oder danach. Fehlt ein Wert in der Verordnung, bleibt das Feld im JSON null und der Befund steht auf 'fehlt'.",
           "maxIterations": 6,
           "enableStreaming": false
         }
@@ -209,7 +215,10 @@
       "position": [
         976,
         768
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
     },
     {
       "parameters": {
@@ -259,7 +268,7 @@
         "text": "=Verordnung:\n{{ JSON.stringify($json.vo) }}\n\nBerechnete Fakten (vom Code, verbindlich):\n{{ JSON.stringify($json.fakten) }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "Du bist der Mengen-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie).\nMandat: (1) Überschreitet die Einheitenzahl je Verordnung die Höchstmenge laut Heilmittelkatalog für die Diagnosegruppe? Für die Diagnosegruppen WS und EX gilt in der Physiotherapie in der Regel eine Höchstmenge von bis zu 6 Einheiten je Verordnung – belege das mit dem Werkzeug. Ausnahme: besonderer Verordnungsbedarf oder langfristiger Heilmittelbedarf (Menge für bis zu 12 Wochen). (2) Höchstens drei vorrangige Heilmittel; ergänzende Heilmittel nicht mehr Einheiten als vorrangige. (3) Liegt die Therapiefrequenz im empfohlenen Rahmen des Katalogs (Frequenzempfehlung bei der Diagnosegruppe, z. B. '1-3x wöchentlich')? Innerhalb des Rahmens: 'ok'. Nur eine belegte Abweichung ist ein 'hinweis'.\nGib Befunde für die Felder 'Einheiten je Verordnung', 'Heilmittel-Kombination' und 'Therapiefrequenz' aus. Recherchiere IMMER zuerst mit dem Werkzeug.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'menge'. Antworte ausschließlich im vorgegebenen JSON-Format.",
+          "systemMessage": "Du bist der Mengen-Prüfer für ärztliche Heilmittelverordnungen (Physiotherapie).\nMandat: (1) Überschreitet die Einheitenzahl je Verordnung die Höchstmenge laut Heilmittelkatalog für die Diagnosegruppe? Für die Diagnosegruppen WS und EX gilt in der Physiotherapie in der Regel eine Höchstmenge von bis zu 6 Einheiten je Verordnung – belege das mit dem Werkzeug. Ausnahme: besonderer Verordnungsbedarf oder langfristiger Heilmittelbedarf (Menge für bis zu 12 Wochen). (2) Höchstens drei vorrangige Heilmittel; ergänzende Heilmittel nicht mehr Einheiten als vorrangige. (3) Liegt die Therapiefrequenz im empfohlenen Rahmen des Katalogs (Frequenzempfehlung bei der Diagnosegruppe, z. B. '1-3x wöchentlich')? Innerhalb des Rahmens: 'ok'. Nur eine belegte Abweichung ist ein 'hinweis'.\nGib Befunde für die Felder 'Einheiten je Verordnung', 'Heilmittel-Kombination' und 'Therapiefrequenz' aus. Recherchiere IMMER zuerst mit dem Werkzeug.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'menge'. Antworte ausschließlich im vorgegebenen JSON-Format. Wichtig zum Ablauf: Rufe dein Regelwerk-Werkzeug höchstens einmal je Befund-Feld auf. Deine letzte Nachricht ist ausschließlich das JSON-Objekt – kein weiterer Werkzeugaufruf, kein Fließtext davor oder danach. Fehlt ein Wert in der Verordnung, bleibt das Feld im JSON null und der Befund steht auf 'fehlt'.",
           "maxIterations": 6,
           "enableStreaming": false
         }
@@ -271,7 +280,10 @@
       "position": [
         976,
         1168
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
     },
     {
       "parameters": {
@@ -321,7 +333,7 @@
         "text": "=Verordnung:\n{{ JSON.stringify($json.vo) }}\n\nBerechnete Fakten (vom Code, verbindlich):\n{{ JSON.stringify($json.fakten) }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "Du bist der Fristen-Prüfer für ärztliche Heilmittelverordnungen.\nMandat: Behandlungsbeginn und Unterbrechungen. WICHTIG: Rechne selbst KEINE Tage aus. Verwende ausschließlich die Werte aus 'Berechnete Fakten' (vom Code berechnet). beginn_fristgerecht=false ist 'fehlerhaft' (Verordnung verliert ihre Gültigkeit). unterbrechung_zulaessig=false ist 'fehlerhaft'. Ein Wert null bedeutet 'nicht anwendbar' und ergibt 'ok' mit kurzer Begründung im Feld fundstelle. Ist bereits_begonnen=true, wurde der Behandlungsbeginn schon früher geprüft: Behandlungsbeginn ist dann 'ok'.\nGib Befunde für die Felder 'Behandlungsbeginn' und 'Unterbrechung' aus und belege die Regel mit einer Fundstelle aus dem Werkzeug.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'frist'. Antworte ausschließlich im vorgegebenen JSON-Format.",
+          "systemMessage": "Du bist der Fristen-Prüfer für ärztliche Heilmittelverordnungen.\nMandat: Behandlungsbeginn und Unterbrechungen. WICHTIG: Rechne selbst KEINE Tage aus. Verwende ausschließlich die Werte aus 'Berechnete Fakten' (vom Code berechnet). beginn_fristgerecht=false ist 'fehlerhaft' (Verordnung verliert ihre Gültigkeit). unterbrechung_zulaessig=false ist 'fehlerhaft'. Ein Wert null bedeutet 'nicht anwendbar' und ergibt 'ok' mit kurzer Begründung im Feld fundstelle. Ist bereits_begonnen=true, wurde der Behandlungsbeginn schon früher geprüft: Behandlungsbeginn ist dann 'ok'.\nGib Befunde für die Felder 'Behandlungsbeginn' und 'Unterbrechung' aus. Als Fundstelle trägst du 'HeilM-RL § 15' ein (Behandlungsbeginn) bzw. 'HeilM-RL § 15 und § 16' (Unterbrechung) – du brauchst dafür keine Suche.\n\nRegeln für alle Prüfer:\n- Du prüfst NUR dein Mandat. Andere Aspekte gehören anderen Prüfern.\n- Erfinde keine Paragraphen oder Zahlen. Belege Regeln mit deinem Regelwerk-Werkzeug (Vektorsuche). Findest du keine Fundstelle, schreibe 'Fundstelle nicht gefunden – manuell prüfen' und setze den Status höchstens auf 'hinweis'.\n- status: 'ok' = in Ordnung, 'fehlt' = Pflichtangabe leer, 'fehlerhaft' = Regelverstoß, der zur Absetzung führen kann, 'hinweis' = die Rezeption muss konkret etwas beachten oder tun.\n- 'fehlt' NUR, wenn das Feld in der Verordnung tatsächlich null oder leer ist. Ein vorhandener Wert ist nie 'fehlt'.\n- Werte unter 'Berechnete Fakten' sind verbindlich und haben Vorrang vor deiner eigenen Einschätzung.\n- korrekturhinweis: ein kurzer Satz in einfacher Sprache für die Rezeption (bei 'ok' leer lassen).\n- Setze das Feld agent auf 'frist'. Antworte ausschließlich im vorgegebenen JSON-Format. Deine Antwort ist ausschließlich das JSON-Objekt – kein Fließtext davor oder danach. Fehlt ein Wert in der Verordnung, bleibt das Feld im JSON null und der Befund steht auf 'fehlt'.",
           "maxIterations": 6,
           "enableStreaming": false
         }
@@ -333,43 +345,10 @@
       "position": [
         976,
         1680
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "retrieve-as-tool",
-        "toolDescription": "Durchsucht die Heilmittel-Richtlinie des G-BA nach Fristen: Behandlungsbeginn nach Ausstellung, dringlicher Behandlungsbedarf, Unterbrechung der Behandlung, Gültigkeit der Verordnung.",
-        "tableName": {
-          "__rl": true,
-          "mode": "id",
-          "value": "documents"
-        },
-        "topK": 5,
-        "options": {
-          "queryName": "match_documents",
-          "metadata": {
-            "metadataValues": [
-              {
-                "name": "quelle",
-                "value": "HeilM-RL"
-              }
-            ]
-          }
-        }
-      },
-      "id": "1b1db41c-ed33-4122-b6e1-4069d0a4fe72",
-      "name": "Regelwerk Fristen-Prüfer",
-      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
-      "typeVersion": 1.3,
-      "position": [
-        880,
-        1904
       ],
-      "credentials": {
-        "supabaseApi": {
-          "name": "Supabase Verordnungs_check"
-        }
-      }
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500
     },
     {
       "parameters": {
@@ -459,6 +438,42 @@
               "name": "output",
               "value": "={{ $('Ergebnis zusammenführen').first().json.antwort }}",
               "type": "string"
+            },
+            {
+              "id": "antwort-status",
+              "name": "gesamtstatus",
+              "value": "={{ $('Ergebnis zusammenführen').first().json.gesamtstatus }}",
+              "type": "string"
+            },
+            {
+              "id": "antwort-ref",
+              "name": "verordnung_ref",
+              "value": "={{ $('Ergebnis zusammenführen').first().json.verordnung_ref }}",
+              "type": "string"
+            },
+            {
+              "id": "antwort-risiko",
+              "name": "absetzungsrisiko_eur",
+              "value": "={{ $('Ergebnis zusammenführen').first().json.absetzungsrisiko_eur }}",
+              "type": "number"
+            },
+            {
+              "id": "antwort-auswahl",
+              "name": "diagnose_auswahl",
+              "value": "={{ $('Ergebnis zusammenführen').first().json.diagnose_auswahl }}",
+              "type": "object"
+            },
+            {
+              "id": "antwort-befunde",
+              "name": "befunde",
+              "value": "={{ $('Ergebnis zusammenführen').first().json.befunde }}",
+              "type": "array"
+            },
+            {
+              "id": "antwort-fakten",
+              "name": "fakten",
+              "value": "={{ $('Fristen berechnen').first().json.fakten }}",
+              "type": "object"
             }
           ]
         },
@@ -516,6 +531,65 @@
         400,
         1072
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entscheidet, ob die Eingabe bereits eine strukturierte Verordnung ist (Formular,\n// JSON aus der Praxissoftware) oder Freitext, den der Extraktor lesen muss.\n// Strukturierte Eingaben überspringen den LLM-Extraktor – schneller und deterministisch.\nconst j = $json;\nconst kandidat =\n  j.chatInput ??\n  j.body?.verordnung ?? j.body ??\n  j.verordnung ??\n  j.eingabe?.verordnung ??\n  j;\n\nlet verordnung = null;\nif (typeof kandidat === \"string\") {\n  try {\n    const geparst = JSON.parse(kandidat);\n    verordnung = geparst && geparst.verordnung ? geparst.verordnung : geparst;\n  } catch {\n    // kein JSON – bleibt Freitext\n  }\n} else if (kandidat && typeof kandidat === \"object\") {\n  verordnung = kandidat.verordnung ?? kandidat;\n}\n\nconst schluessel = [\"icd10\", \"diagnosen\", \"heilmittel\", \"ausstellungsdatum\", \"patient\"];\nconst strukturiert = !!verordnung && schluessel.some((k) => verordnung[k] !== undefined && verordnung[k] !== null);\n\nreturn [{ json: {\n  modus: strukturiert ? \"strukturiert\" : \"freitext\",\n  verordnung: strukturiert ? verordnung : null,\n  text: typeof kandidat === \"string\" ? kandidat : String(j.chatInput ?? JSON.stringify(kandidat))\n} }];"
+      },
+      "id": "a1b2c3d4-1111-4a2b-9c3d-000000000001",
+      "name": "Eingabe prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "modus-ist-json",
+              "leftValue": "={{ $json.modus }}",
+              "rightValue": "strukturiert",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4a2b-9c3d-000000000002",
+      "name": "Verordnung strukturiert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        1240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reicht die im Formular bzw. von der Praxissoftware gewählte Verordnung an die\n// Prüfkette weiter. Die zwei ICD-Zeilen sind hier bereits entschieden – anders als\n// beim Freitext, wo \"Diagnosen auswählen\" sie erst bestimmt.\nconst vo = { ...$json.verordnung };\nconst diagnosen = Array.isArray(vo.diagnosen) ? vo.diagnosen : [];\n\nvo.icd10 = vo.icd10 ?? diagnosen[0]?.code ?? null;\nvo.icd10_bezeichnung = vo.icd10_bezeichnung ?? diagnosen[0]?.bezeichnung ?? null;\nif (!Array.isArray(vo.weitere_diagnosen)) {\n  vo.weitere_diagnosen = diagnosen[1] ? [{ code: diagnosen[1].code, bezeichnung: diagnosen[1].bezeichnung ?? null }] : [];\n}\nvo.nicht_verordnungsrelevant = vo.nicht_verordnungsrelevant ?? [];\nvo.quelle = \"formular\";\n\nreturn [{ json: { output: vo } }];"
+      },
+      "id": "a1b2c3d4-1111-4a2b-9c3d-000000000003",
+      "name": "Verordnung übernehmen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        424,
+        1400
+      ]
     }
   ],
   "connections": {
@@ -523,7 +597,7 @@
       "main": [
         [
           {
-            "node": "Verordnung erfassen",
+            "node": "Eingabe prüfen",
             "type": "main",
             "index": 0
           }
@@ -756,17 +830,6 @@
         ]
       ]
     },
-    "Regelwerk Fristen-Prüfer": {
-      "ai_tool": [
-        [
-          {
-            "node": "Fristen-Prüfer",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Schema Befunde Fristen-Prüfer": {
       "ai_outputParser": [
         [
@@ -823,6 +886,46 @@
       ]
     },
     "Diagnosen auswählen": {
+      "main": [
+        [
+          {
+            "node": "Fristen berechnen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eingabe prüfen": {
+      "main": [
+        [
+          {
+            "node": "Verordnung strukturiert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verordnung strukturiert?": {
+      "main": [
+        [
+          {
+            "node": "Verordnung übernehmen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verordnung erfassen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verordnung übernehmen": {
       "main": [
         [
           {

@@ -23,15 +23,28 @@ Die Rezeption gibt die Angaben einer Verordnung in einen Chat ein. Vier speziali
 
 Die Rezeption entscheidet. Das System gibt Empfehlungen, es weist nichts automatisch ab.
 
-## Ausgabe: Vorschau der ausgefüllten Verordnung
+## Eingabe: ausgefüllte Verordnung statt Freitext
 
-Ergebnis der Prüfung ist neben der Ampel eine **Vorschau der ausgefüllten Heilmittelverordnung (Muster 13)**: Der erfasste Fall wird auf den Vordruck gezeichnet, damit die Rezeption sieht, was tatsächlich auf dem Formular steht – und was dort nicht hingehört.
+Zwei Wege führen in dieselbe Prüfung:
 
-Die Vorschau ist eine statische Seite ohne Build: [`preview/muster13.html`](preview/muster13.html) im Browser öffnen, sie lädt die Ausgabe des Workflows (Beispielfall enthalten, echte Ausgaben über „Workflow-Ausgabe laden"). Sie rechnet und erfindet nichts – fehlende Werte bleiben leer.
+1. **Erfassungsmaske** (Standard für die Rezeption): Der Vordruck Muster 13 wird am
+   Bildschirm ausgefüllt – dieselbe Geometrie wie das Papier, inklusive
+   Ankreuzfeldern für Zuzahlung, Bereich, Leitsymptomatik und Hausbesuch. Ein Klick
+   auf **Verordnung prüfen** schickt die Angaben als strukturiertes JSON an den
+   Workflow; Ampel, Befunde und Fundstellen erscheinen daneben.
+   Start: `npm run formular` → [`formular/muster13.html`](formular/README.md).
+2. **Freitext im Chat**: Liegt die Verordnung nur als Text vor, erfasst ein
+   LLM-Agent sie im festen Schema. Fehlende Angaben werden `null`, nichts wird
+   geraten.
 
-Zwei Dinge sind dabei fachlich entscheidend ([`docs/vordruck-muster13.md`](docs/vordruck-muster13.md)):
+Der Workflow erkennt strukturiertes JSON selbst (`Eingabe prüfen` → `Verordnung
+strukturiert?`) und überspringt dann den Extraktor; die vier Prüfer laufen in beiden
+Fällen identisch. Zwei Dinge sind dabei fachlich entscheidend
+([`docs/vordruck-muster13.md`](docs/vordruck-muster13.md)):
 
-- Auf den Vordruck passen **zwei ICD-10-GM-Codes**. Erkannt werden im Freitext oft mehr, deshalb wählt der Workflow nach einer festen Regel aus (führende Diagnose + zweite Diagnose, übrige Codes mit Begründung als „nicht übernommen" sichtbar).
+- Auf den Vordruck passen **zwei ICD-10-GM-Codes**. Im Formular wählt sie die
+  Rezeption; im Freitext wählt sie der Code-Node `Diagnosen auswählen` nach einer
+  festen Regel, die übrigen Codes erscheinen mit Begründung als „nicht übernommen".
 - Der Vordruck kennt **keinen Behandlungsbeginn, keine Erst-/Folgeverordnung und kein Ankreuzfeld „besonderer Verordnungsbedarf"**. Die Frist läuft ab dem Ausstellungsdatum (§ 15 Abs. 1 HeilM-RL), der Verordnungsfall ersetzt die Verordnungsart (§ 7 Abs. 1), und besonderer Bedarf wird über die ICD-Codes der Diagnoseliste geltend gemacht.
 
 ## Architektur
@@ -89,7 +102,7 @@ npx n8n import:workflow --input=.n8n/tmp/vier-pruefer-lokal.json
 npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import aktivieren
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
-npm run vorschau:lauf                         # letzten Lauf in die Vorschau holen (preview/)
+npm run formular                            # Erfassungsmaske auf http://127.0.0.1:4321
 ```
 
 Der Ordner `.n8n/` (Datenbank, Credentials, Schlüssel) ist per `.gitignore`
@@ -116,18 +129,9 @@ docker restart <container>
 
 Danach antwortet der Chat unter `http://localhost:5678/webhook/verordnungs-check/chat`
 (POST mit `{"action":"sendMessage","sessionId":"…","chatInput":"…"}`) oder über die
-Chat-Ansicht im Editor. Die Wissensbasis liegt in Supabase und muss nur geladen
-werden, wenn die Instanz auf ein anderes Projekt zeigt.
-
-Die Vorschau liest die Datenbank der Instanz. Datenordner herausholen (Container
-vorher stoppen, damit die WAL-Datei mitkommt) und den Pfad mitgeben:
-
-```bash
-docker stop <container>
-docker cp <container>:/home/node/.n8n/. .n8n/docker
-docker start <container>
-npm run vorschau:lauf -- --db=.n8n/docker/database.sqlite
-```
+Chat-Ansicht im Editor. Die Erfassungsmaske schickt ihre Verordnung an dieselbe
+Adresse – `npm run formular` öffnet sie auf Port 4321. Die Wissensbasis liegt in
+Supabase und muss nur geladen werden, wenn die Instanz auf ein anderes Projekt zeigt.
 
 ## Wissensquellen (frei zugänglich)
 
@@ -142,10 +146,10 @@ npm run vorschau:lauf -- --db=.n8n/docker/database.sqlite
 |---|---|
 | `n8n/` | Exportierte Workflows (.json) |
 | `scripts/` | Hilfsskripte für die lokale n8n-Instanz (Import vorbereiten) |
-| `preview/` | Vorschau der ausgefüllten Verordnung (Muster 13), Beispieldaten, kein Build |
+| `formular/` | Erfassungsmaske Muster 13 (Eingabe), Beispieldaten, kein Build |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
-| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`) und für die Vorschau (`node tests/vorschau.test.mjs`), zusammen mit `npm test` |
+| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`) und für die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test` |
 | `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13 |
 
 ## Team
@@ -171,11 +175,14 @@ Geplant für Sprint 2: Verordnungsfall-Prüfung (Folgeverordnungen, orientierend
 
 Offen: Ist-Interview mit der Praxis, Business Case, EU-AI-Act-Einordnung, Präsentation.
 
-Ergänzung 14.10.2026: Die Vorschau der ausgefüllten Verordnung liegt in
-[`preview/`](preview/README.md), die Feldzuordnung (Workflow → Vordruck) und die
-Auswahlregel für die zwei Diagnosen in [`docs/vordruck-muster13.md`](docs/vordruck-muster13.md).
+Ergänzung 18.10.2026: Die Verordnung ist die **Eingabe**, das Ergebnis ist die
+**Prüfung**. Dafür gibt es jetzt die Erfassungsmaske in [`formular/`](formular/README.md)
+(`npm run formular`), die strukturiertes JSON an den Workflow schickt; der Freitext-Chat
+bleibt als zweiter Weg. Feldzuordnung und Auswahlregel:
+[`docs/vordruck-muster13.md`](docs/vordruck-muster13.md). Die frühere Vorschau der
+ausgefüllten Verordnung entfällt – sie hätte den Vordruck nur noch einmal gezeigt.
 
 Ergänzung 15.10.2026: Das Schema `Verordnung` liefert jetzt auch Personalien,
 Kennzeichen und Stammdaten, der Code-Node **Diagnosen auswählen** belegt die zwei
-ICD-10-Zeilen nach dieser Regel. Mit `npm run vorschau:lauf` wird der letzte
-lokale Lauf direkt in die Vorschau geholt (siehe [`preview/`](preview/README.md)).
+ICD-10-Zeilen nach dieser Regel (nur im Freitext-Weg – im Formular entscheidet die
+Rezeption).

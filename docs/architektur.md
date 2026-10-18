@@ -2,9 +2,9 @@
 
 ## Ablauf
 
-1. **Chat (n8n Chat Trigger):** Die Rezeption fügt die Angaben einer Verordnung als Text oder JSON ein.
-2. **Verordnung erfassen:** Ein LLM-Agent überführt den Text in ein festes JSON-Schema. Fehlende Angaben werden `null`, nichts wird geraten. Er erfasst alle genannten ICD-10-GM-Codes als Liste (`diagnosen[]`, in Nennungsreihenfolge, mit Kennzeichen `anlass`), dazu Personalien, Kennzeichen und Stammdaten.
-3. **Diagnosen auswählen (Code-Node):** Auf den Vordruck Muster 13 passen zwei ICD-10-Zeilen. Der Node wählt sie nach der Regel in [`vordruck-muster13.md`](vordruck-muster13.md), Abschnitt 5 (verordnungsrelevant = passt zur Diagnosegruppe des Heilmittels), belegt `icd10` und `weitere_diagnosen`, begründet jede verworfene Diagnose in `nicht_verordnungsrelevant` und meldet Zweifelsfälle als `diagnose_auswahl.hinweise`. Abgesichert durch `tests/diagnosen.test.mjs`.
+1. **Eingang:** Zwei Wege führen in dieselbe Prüfung. Die **Erfassungsmaske** ([`../formular/`](../formular/README.md)) schickt die am Bildschirm ausgefüllte Verordnung als strukturiertes JSON; der **Chat** nimmt Freitext. Der Code-Node `Eingabe prüfen` erkennt, ob schon eine vollständige Verordnung vorliegt, `Verordnung strukturiert?` (IF) entscheidet den Weg.
+2. **Verordnung erfassen (nur Freitext):** Ein LLM-Agent überführt den Text in ein festes JSON-Schema. Fehlende Angaben werden `null`, nichts wird geraten. Er erfasst alle genannten ICD-10-GM-Codes als Liste (`diagnosen[]`, in Nennungsreihenfolge, mit Kennzeichen `anlass`), dazu Personalien, Kennzeichen und Stammdaten.
+3. **Diagnosen auswählen (nur Freitext):** Auf den Vordruck Muster 13 passen zwei ICD-10-Zeilen. Der Node wählt sie nach der Regel in [`vordruck-muster13.md`](vordruck-muster13.md), Abschnitt 5 (verordnungsrelevant = passt zur Diagnosegruppe des Heilmittels), belegt `icd10` und `weitere_diagnosen`, begründet jede verworfene Diagnose in `nicht_verordnungsrelevant` und meldet Zweifelsfälle als `diagnose_auswahl.hinweise`. Abgesichert durch `tests/diagnosen.test.mjs`. Im Formular-Weg entfällt der Node: Die Rezeption hat die zwei Zeilen bereits gewählt, der Code-Node normalisiert sie nur.
 4. **Fakten berechnen (Code-Node „Fristen berechnen“):** Alles, was sich als Regel aufschreiben lässt, rechnet der Code, nicht das LLM:
    - Tage zwischen Ausstellung, geplantem Beginn und letzter Behandlung. Grenzwerte: Behandlungsbeginn 28 Tage (14 Tage bei dringlichem Behandlungsbedarf), Unterbrechung 14 Tage
    - Format von LANR und BSNR (9 Ziffern)
@@ -12,8 +12,8 @@
    - Summe der Einheiten, Anzahl vorrangiger Heilmittel
 
    Die Prüf-Agenten erhalten diese Werte als „berechnete Fakten“, die für sie verbindlich sind. Abgesichert durch `tests/fakten.test.mjs`.
-5. **Vier Prüf-Agenten:** Jeder Agent bekommt die Verordnung und die berechneten Fakten, durchsucht seinen Ausschnitt der Wissensbasis und liefert Befunde im gemeinsamen JSON-Schema.
-6. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext – und die Diagnoseauswahl für Vorschau und Protokoll.
+5. **Vier Prüf-Agenten:** Jeder Agent bekommt die Verordnung und die berechneten Fakten und liefert Befunde im gemeinsamen JSON-Schema. Formal-, Diagnose- und Mengen-Prüfer durchsuchen dafür ihren Ausschnitt der Wissensbasis (Vektorsuche); der **Fristen-Prüfer arbeitet ohne Werkzeug**, weil sein Mandat vollständig durch die berechneten Fakten bestimmt ist und die Fundstelle feststeht (§ 15 HeilM-RL) – das verhindert auch, dass er in einer erfolglosen Suchschleife endet. Alle Agenten sind auf Wiederholung gesetzt (`retryOnFail`, 3 Versuche), weil ein Modell gelegentlich mit einem Werkzeugaufruf statt JSON endet.
+6. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext – und die Diagnoseauswahl für Protokoll und Erfassungsmaske.
 7. **Protokoll:** Prüfung und Befunde werden in Supabase gespeichert.
 
 **Ab Sprint 2 (Verordnungsfall-Prüfung):** Zwischen Schritt 4 und 5 kommen zwei Komponenten dazu:

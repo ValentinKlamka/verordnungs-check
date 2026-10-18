@@ -1,7 +1,7 @@
 # Vordruck Muster 13: Felder, Zuordnung und Auswahl der Diagnosen
 
 *Stand 14.10.2026 · Grundlage: KBV-/G-BA-Quellen (siehe unten), recherchiert und
-gegen den Originalvordruck abgeglichen. Umsetzung: [`../preview/`](../preview/).*
+gegen den Originalvordruck abgeglichen. Umsetzung: [`../formular/`](../formular/).*
 
 Diese Notiz beantwortet drei Fragen:
 
@@ -53,46 +53,46 @@ Für die Umsetzung ebenso wichtig, weil wir sie nicht erfinden dürfen:
 | **Arbeitsunfall / Berufskrankheit** | „Unfallfolgen" gilt nur für **sonstige** Unfälle (Haus, Sport, Verkehr). Arbeitsunfall, Berufskrankheit und Schulunfall gehören auf andere Vordrucke (Muster 4, e01 bzw. 16). |
 | **Patienten-Pseudonym, Prüfdatum, Historie** | Interne Felder des Prüfsystems, nicht Teil der Verordnung. |
 
-## 4. Zuordnung Workflow-Ausgabe → Vordruck
+## 4. Zuordnung Vordruck → Workflow-Feld
 
-Quelle ist das Objekt aus dem Code-Node **Ergebnis zusammenführen**, konkret
-`eingabe.verordnung` (= `vo`). Die Vorschau liest ausschließlich diese Werte;
-fehlt ein Wert, bleibt das Feld leer ([`../preview/muster13.js`](../preview/muster13.js)).
+Die Erfassungsmaske ([`../formular/muster13.js`](../formular/muster13.js)) liest die
+Felder des Vordrucks aus und schickt sie als Verordnung-JSON an den Workflow. Beim
+Freitext-Weg füllt der Extraktor dieselben Felder aus `eingabe.verordnung` (= `vo`).
 
-Die Spalte „Ausgabe" nennt, woher der Wert kommt: **Extraktor** = Schema
-`Verordnung` im Node „Verordnung erfassen", **Auswahl** = Code-Node „Diagnosen
-auswählen".
+Die Spalte „Quelle" nennt, woher der Wert kommt: **Formular** = Eingabe der
+Rezeption, **Extraktor** = Schema `Verordnung` im Node „Verordnung erfassen",
+**Auswahl** = Code-Node „Diagnosen auswählen" (nur im Freitext-Weg).
 
-| Vordruckfeld | Pfad in der Workflow-Ausgabe | Ausgabe | Status |
-|---|---|---|---|
-| Krankenkasse bzw. Kostenträger | `patient.krankenkasse` | Extraktor | umgesetzt |
-| Name, Vorname des Versicherten | `patient.nachname`, `patient.vorname` | Extraktor | umgesetzt |
-| geb. am | `patient.geburtsdatum` | Extraktor | umgesetzt |
-| Kostenträgerkennung | `patient.kostentraegerkennung` | Extraktor | umgesetzt |
-| Versicherten-Nr. | `patient.versichertennummer` | Extraktor | umgesetzt |
-| Status | `patient.versichertenstatus` | Extraktor | umgesetzt |
-| Betriebsstätten-Nr. | `bsnr` | Extraktor | umgesetzt |
-| Arzt-Nr. | `lanr` | Extraktor | umgesetzt |
-| Datum | `ausstellungsdatum` | Extraktor | umgesetzt |
-| Zuzahlung frei / -pflicht | `zuzahlung` (`"frei"` \| `"pflicht"`) | Extraktor | umgesetzt |
-| Unfallfolgen | `unfallfolgen` | Extraktor | umgesetzt |
-| BVG / SER | `bvg_ser` | Extraktor | umgesetzt |
-| Bereichskreuz | `heilmittelbereich` (`"physiotherapie"`, `"podologie"`, `"ssss"`, `"ergotherapie"`, `"ernaehrung"`) | Extraktor | umgesetzt |
-| ICD-10-Code Zeile 1 + Klartext | `icd10`, `icd10_bezeichnung` | Auswahl | umgesetzt |
-| ICD-10-Code Zeile 2 + Klartext | `weitere_diagnosen[0].code`, `.bezeichnung` | Auswahl | umgesetzt |
-| Diagnosegruppe | `diagnosegruppe` | Extraktor | umgesetzt |
-| Leitsymptomatik a/b/c | `leitsymptomatik` | Extraktor | umgesetzt |
-| patientenindividuelle Leitsymptomatik | Kästchen an, wenn `leitsymptomatik === "x"` oder `leitsymptomatik_freitext` gesetzt; Freitextbox darunter zeigt `leitsymptomatik_freitext` | Extraktor | umgesetzt |
-| Heilmittelzeilen 1–3 / ergänzendes Heilmittel | `heilmittel[]` (`name`, `einheiten`, `art`), `ergaenzendes_heilmittel` | Extraktor | umgesetzt |
-| Behandlungseinheiten | `heilmittel[].einheiten` | Extraktor | umgesetzt |
-| Therapiebericht | `therapiebericht` | Extraktor | umgesetzt |
-| Hausbesuch ja/nein | `hausbesuch` | Extraktor | umgesetzt |
-| Therapiefrequenz | `frequenz` | Extraktor | umgesetzt |
-| Dringlicher Behandlungsbedarf | `dringlich` | Extraktor | umgesetzt |
-| Therapieziele / Hinweise | `therapieziele_hinweise` | Extraktor | umgesetzt |
-| IK des Leistungserbringers | – | – | bleibt leer (trägt der Heilmittelerbringer ein) |
-| Arztstempel / Unterschrift | `arzt.name`, `arzt.fachrichtung`, `arzt.betriebsstaette` | Extraktor | umgesetzt |
-| nicht auf dem Vordruck | `nicht_verordnungsrelevant[]` | Auswahl | umgesetzt, mit Begründung je Code |
+| Vordruckfeld | Feld im Verordnung-JSON | Quelle |
+|---|---|---|
+| Krankenkasse bzw. Kostenträger | `patient.krankenkasse` | Formular · Extraktor |
+| Name, Vorname des Versicherten | `patient.nachname`, `patient.vorname` | Formular · Extraktor |
+| geb. am | `patient.geburtsdatum` | Formular · Extraktor |
+| Kostenträgerkennung | `patient.kostentraegerkennung` | Formular · Extraktor |
+| Versicherten-Nr. | `patient.versichertennummer` | Formular · Extraktor |
+| Status | `patient.versichertenstatus` | Formular · Extraktor |
+| Betriebsstätten-Nr. | `bsnr` | Formular · Extraktor |
+| Arzt-Nr. | `lanr` | Formular · Extraktor |
+| Datum | `ausstellungsdatum` | Formular · Extraktor |
+| Zuzahlung frei / -pflicht | `zuzahlung` (`"frei"` oder `"pflicht"`) | Formular · Extraktor |
+| Unfallfolgen | `unfallfolgen` | Formular · Extraktor |
+| BVG / SER | `bvg_ser` | Formular · Extraktor |
+| Bereichskreuz | `heilmittelbereich` (`"physiotherapie"`, `"podologie"`, `"ssss"`, `"ergotherapie"`, `"ernaehrung"`) | Formular · Extraktor |
+| ICD-10-Code Zeile 1 + Klartext | `icd10`, `icd10_bezeichnung` | Formular · Auswahl |
+| ICD-10-Code Zeile 2 + Klartext | `weitere_diagnosen[0].code`, `.bezeichnung` | Formular · Auswahl |
+| Diagnosegruppe | `diagnosegruppe` | Formular · Extraktor |
+| Leitsymptomatik a/b/c | `leitsymptomatik` | Formular · Extraktor |
+| patientenindividuelle Leitsymptomatik | Kästchen an, wenn `leitsymptomatik === "x"` oder `leitsymptomatik_freitext` gesetzt; Freitextbox darunter zeigt `leitsymptomatik_freitext` | Formular · Extraktor |
+| Heilmittelzeilen 1–3 / ergänzendes Heilmittel | `heilmittel[]` (`name`, `einheiten`, `art`), `ergaenzendes_heilmittel` | Formular · Extraktor |
+| Behandlungseinheiten | `heilmittel[].einheiten` | Formular · Extraktor |
+| Therapiebericht | `therapiebericht` | Formular · Extraktor |
+| Hausbesuch ja/nein | `hausbesuch` | Formular · Extraktor |
+| Therapiefrequenz | `frequenz` | Formular · Extraktor |
+| Dringlicher Behandlungsbedarf | `dringlich` | Formular · Extraktor |
+| Therapieziele / Hinweise | `therapieziele_hinweise` | Formular · Extraktor |
+| IK des Leistungserbringers | – | bleibt leer (trägt der Heilmittelerbringer ein) |
+| Arztstempel / Unterschrift | `arzt.name`, `arzt.fachrichtung`, `arzt.betriebsstaette` | Formular · Extraktor |
+| nicht auf dem Vordruck | `nicht_verordnungsrelevant[]` | Auswahl, mit Begründung je Code |
 
 Zusätzlich, ohne Entsprechung auf dem Vordruck: `diagnosen[]` (alle erkannten
 Codes mit `anlass`-Kennzeichen, Grundlage der Auswahl) und `diagnose_auswahl`
@@ -130,8 +130,8 @@ deterministisch, damit sie prüfbar bleibt
    Alternativen als Hinweis („fachlich prüfen") in `diagnose_auswahl.hinweise`
    und in der Vorschau; die Rezeption entscheidet.
 
-Beispiel aus dem Beispielfall ([`../preview/`](../preview/)) – dieselbe Auswahl
-liefert der Code-Node:
+Beispiel aus dem Beispielfall ([`../formular/`](../formular/)) – im Freitext-Weg
+liefert der Code-Node dieselbe Auswahl:
 
 | Code | Bezeichnung | Entscheidung |
 |---|---|---|
