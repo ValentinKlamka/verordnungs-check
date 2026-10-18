@@ -76,4 +76,26 @@ const fehlend = schema.required.filter((name) => !js.includes(name));
 assert.deepEqual(fehlend, [], `Schemafelder ohne Bezug im Formular: ${fehlend.join(', ')}`);
 console.log(`✓ Alle ${schema.required.length} Schemafelder im Formular berücksichtigt`);
 
+// --- 5. n8n-Formular-Workflow (Form Trigger) --------------------------------
+const formular = JSON.parse(lies('n8n/formular.json'));
+const trigger = formular.nodes.find((n) => n.type === 'n8n-nodes-base.formTrigger');
+const mapping = formular.nodes.find((n) => n.type === 'n8n-nodes-base.code').parameters.jsCode;
+
+const felder = trigger.parameters.formFields.values.map((f) => f.fieldName);
+// Heilmittel- und Einheitenzeilen bildet der Code über `f["heilmittel_" + i]` ab.
+const unbenutzt = felder.filter((name) => {
+  if (/^(heilmittel|einheiten)_\d$/.test(name)) return !mapping.includes(name.slice(0, -1));
+  return !mapping.includes(name);
+});
+assert.deepEqual(unbenutzt, [], `Formularfelder ohne Abbildung im Mapping: ${unbenutzt.join(', ')}`);
+
+const fehlendMapping = schema.required.filter((name) => !mapping.includes(name));
+assert.deepEqual(fehlendMapping, [], `Schemafelder ohne Bezug im Formular-Mapping: ${fehlendMapping.join(', ')}`);
+
+// Der Form-Workflow muss den Chat-Webhook aufrufen und eine Ergebnisseite zeigen.
+const http = formular.nodes.find((n) => n.type === 'n8n-nodes-base.httpRequest');
+assert.match(http.parameters.url, /\/webhook\/verordnungs-check\/chat$/, 'Formular ruft den richtigen Webhook auf');
+assert.equal(formular.nodes.at(-1).type, 'n8n-nodes-base.form', 'Letzte Station muss die Ergebnisseite sein');
+console.log(`✓ Form-Workflow: ${felder.length} Felder abgebildet, Webhook und Ergebnisseite verdrahtet`);
+
 console.log('\nAlle Prüfungen der Erfassungsmaske bestanden');

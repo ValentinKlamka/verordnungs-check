@@ -1,0 +1,401 @@
+{
+  "name": "Verordnungs-Check – Formular",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "verordnung",
+        "formTitle": "Verordnungs-Check – Heilmittelverordnung",
+        "formDescription": "Prototyp mit synthetischen Daten – keine echten Patientendaten eingeben. Ausfüllen wie auf dem Vordruck Muster 13, dann prüfen lassen.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "krankenkasse",
+              "fieldLabel": "Krankenkasse bzw. Kostenträger",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "nachname",
+              "fieldLabel": "Nachname der versicherten Person",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "vorname",
+              "fieldLabel": "Vorname",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "geburtsdatum",
+              "fieldLabel": "Geburtsdatum",
+              "fieldType": "date"
+            },
+            {
+              "fieldName": "kostentraegerkennung",
+              "fieldLabel": "Kostenträgerkennung",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "versichertennummer",
+              "fieldLabel": "Versicherten-Nr.",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "versichertenstatus",
+              "fieldLabel": "Status",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Mitglied"
+                  },
+                  {
+                    "option": "Familienangehöriger"
+                  },
+                  {
+                    "option": "Rentner"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "bsnr",
+              "fieldLabel": "Betriebsstätten-Nr. (BSNR, 9-stellig)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "lanr",
+              "fieldLabel": "Arzt-Nr. (LANR, 9-stellig)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "ausstellungsdatum",
+              "fieldLabel": "Ausstellungsdatum",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldName": "heilmittelbereich",
+              "fieldLabel": "Heilmittelbereich",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Physiotherapie"
+                  },
+                  {
+                    "option": "Podologische Therapie"
+                  },
+                  {
+                    "option": "Stimm-, Sprech-, Sprach- und Schlucktherapie"
+                  },
+                  {
+                    "option": "Ergotherapie"
+                  },
+                  {
+                    "option": "Ernährungstherapie"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "zuzahlung",
+              "fieldLabel": "Zuzahlung",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Zuzahlung frei"
+                  },
+                  {
+                    "option": "Zuzahlungspflichtig"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "unfallfolgen",
+              "fieldLabel": "Unfallfolgen (sonstiger Unfall, keine Arbeitsunfälle)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "nein"
+                  },
+                  {
+                    "option": "ja"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "bvg_ser",
+              "fieldLabel": "BVG / SER (besonderer Versorgungsbedarf)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "nein"
+                  },
+                  {
+                    "option": "ja"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "icd10",
+              "fieldLabel": "ICD-10-Code Zeile 1 (Anlass der Verordnung)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "icd10_bezeichnung",
+              "fieldLabel": "Bezeichnung zu Zeile 1",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "icd10_2",
+              "fieldLabel": "ICD-10-Code Zeile 2 (optional, z. B. Diagnoseliste)",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "icd10_2_bezeichnung",
+              "fieldLabel": "Bezeichnung zu Zeile 2",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "diagnosegruppe",
+              "fieldLabel": "Diagnosegruppe (z. B. WS, EX)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "leitsymptomatik",
+              "fieldLabel": "Leitsymptomatik gemäß Heilmittelkatalog",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "a"
+                  },
+                  {
+                    "option": "b"
+                  },
+                  {
+                    "option": "c"
+                  },
+                  {
+                    "option": "x – patientenindividuell"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "leitsymptomatik_freitext",
+              "fieldLabel": "Leitsymptomatik als Freitext (bei x)",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldName": "heilmittel_1",
+              "fieldLabel": "Heilmittel 1 (z. B. KG)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "einheiten_1",
+              "fieldLabel": "Behandlungseinheiten Heilmittel 1",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldName": "heilmittel_2",
+              "fieldLabel": "Heilmittel 2",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "einheiten_2",
+              "fieldLabel": "Behandlungseinheiten Heilmittel 2",
+              "fieldType": "number"
+            },
+            {
+              "fieldName": "heilmittel_3",
+              "fieldLabel": "Heilmittel 3",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "einheiten_3",
+              "fieldLabel": "Behandlungseinheiten Heilmittel 3",
+              "fieldType": "number"
+            },
+            {
+              "fieldName": "ergaenzendes_heilmittel",
+              "fieldLabel": "Ergänzendes Heilmittel",
+              "fieldType": "text"
+            },
+            {
+              "fieldName": "einheiten_ergaenzend",
+              "fieldLabel": "Behandlungseinheiten ergänzendes Heilmittel",
+              "fieldType": "number"
+            },
+            {
+              "fieldName": "frequenz",
+              "fieldLabel": "Therapiefrequenz (z. B. 2x pro Woche)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "therapiebericht",
+              "fieldLabel": "Therapiebericht erforderlich",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "nein"
+                  },
+                  {
+                    "option": "ja"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "hausbesuch",
+              "fieldLabel": "Hausbesuch erforderlich",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "nein"
+                  },
+                  {
+                    "option": "ja"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "dringlich",
+              "fieldLabel": "Dringlicher Behandlungsbedarf (Beginn innerhalb 14 Tagen)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "nein"
+                  },
+                  {
+                    "option": "ja"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "therapieziele",
+              "fieldLabel": "Therapieziele / weitere Hinweise",
+              "fieldType": "textarea"
+            }
+          ]
+        }
+      },
+      "id": "d4e5f6a7-4444-4d5e-8f60-000000000001",
+      "name": "Verordnung erfassen",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "verordnung"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Bildet die Formularfelder auf das Verordnung-Schema des Prüf-Workflows ab.\n// Fehlende Angaben werden null – geraten wird nichts.\nconst f = $input.first().json;\n\nconst text = (v) => (v === undefined || v === null || String(v).trim() === \"\" ? null : String(v).trim());\nconst zahl = (v) => {\n  const t = String(v ?? \"\").replace(\",\", \".\").trim();\n  if (!t) return null;\n  const n = Number(t);\n  return Number.isFinite(n) ? n : null;\n};\nconst iso = (v) => {\n  const t = text(v);\n  if (!t) return null;\n  const de = /^(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})$/.exec(t);\n  if (de) return de[3] + \"-\" + de[2].padStart(2, \"0\") + \"-\" + de[1].padStart(2, \"0\");\n  return t.slice(0, 10);\n};\n\nconst bereiche = {\n  \"Physiotherapie\": \"physiotherapie\",\n  \"Podologische Therapie\": \"podologie\",\n  \"Stimm-, Sprech-, Sprach- und Schlucktherapie\": \"ssss\",\n  \"Ergotherapie\": \"ergotherapie\",\n  \"Ernährungstherapie\": \"ernaehrung\"\n};\nconst ls = text(f.leitsymptomatik);\n\nconst heilmittel = [];\nfor (const i of [1, 2, 3]) {\n  const name = text(f[\"heilmittel_\" + i]);\n  if (name) heilmittel.push({ name, einheiten: zahl(f[\"einheiten_\" + i]), art: \"vorrangig\" });\n}\nconst ergaenzend = text(f.ergaenzendes_heilmittel);\n\nconst jetzt = new Date();\nconst heute = jetzt.toISOString().slice(0, 10);\nconst uhrzeit = String(jetzt.getHours()).padStart(2, \"0\") + String(jetzt.getMinutes()).padStart(2, \"0\");\nconst krankenkasse = text(f.krankenkasse);\nconst code2 = (text(f.icd10_2) || \"\").toUpperCase() || null;\n\nconst verordnung = {\n  verordnung_ref: \"VO-\" + heute.replace(/-/g, \"\") + \"-\" + uhrzeit,\n  patient: {\n    krankenkasse,\n    nachname: text(f.nachname),\n    vorname: text(f.vorname),\n    geburtsdatum: iso(f.geburtsdatum),\n    kostentraegerkennung: text(f.kostentraegerkennung),\n    versichertennummer: text(f.versichertennummer),\n    versichertenstatus: text(f.versichertenstatus)\n  },\n  bsnr: text(f.bsnr),\n  lanr: text(f.lanr),\n  ausstellungsdatum: iso(f.ausstellungsdatum),\n  pruefdatum: heute,\n  geplanter_beginn: null,\n  zuzahlung: text(f.zuzahlung) === \"Zuzahlung frei\" ? \"frei\" : text(f.zuzahlung) === \"Zuzahlungspflichtig\" ? \"pflicht\" : null,\n  unfallfolgen: f.unfallfolgen === \"ja\",\n  bvg_ser: f.bvg_ser === \"ja\",\n  heilmittelbereich: bereiche[text(f.heilmittelbereich)] ?? null,\n  icd10: (text(f.icd10) || \"\").toUpperCase() || null,\n  icd10_bezeichnung: text(f.icd10_bezeichnung),\n  weitere_diagnosen: code2 ? [{ code: code2, bezeichnung: text(f.icd10_2_bezeichnung) }] : [],\n  nicht_verordnungsrelevant: [],\n  diagnosen: [\n    ...(text(f.icd10) ? [{ code: text(f.icd10).toUpperCase(), bezeichnung: text(f.icd10_bezeichnung), anlass: true }] : []),\n    ...(code2 ? [{ code: code2, bezeichnung: text(f.icd10_2_bezeichnung), anlass: false }] : [])\n  ],\n  diagnosegruppe: (text(f.diagnosegruppe) || \"\").toUpperCase() || null,\n  leitsymptomatik: ls ? ls.charAt(0).toLowerCase() : null,\n  leitsymptomatik_freitext: text(f.leitsymptomatik_freitext),\n  heilmittel,\n  ergaenzendes_heilmittel: ergaenzend ? { name: ergaenzend, einheiten: zahl(f.einheiten_ergaenzend) } : { name: null, einheiten: null },\n  frequenz: text(f.frequenz),\n  therapiebericht: f.therapiebericht === \"ja\",\n  hausbesuch: f.hausbesuch === \"ja\",\n  dringlich: f.dringlich === \"ja\",\n  therapieziele_hinweise: text(f.therapieziele),\n  arzt: { name: null, fachrichtung: null, betriebsstaette: null },\n  unterschrift: true,\n  letzte_behandlung: null,\n  unterbrechungsgrund: null,\n  kostentraeger: krankenkasse,\n  quelle: \"formular\"\n};\n\nreturn [{ json: { verordnung } }];"
+      },
+      "id": "d4e5f6a7-4444-4d5e-8f60-000000000002",
+      "name": "Verordnung bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5678/webhook/verordnungs-check/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  action: 'sendMessage',\n  sessionId: 'formular-' + Date.now(),\n  chatInput: JSON.stringify($json.verordnung)\n}) }}",
+        "options": {}
+      },
+      "id": "d4e5f6a7-4444-4d5e-8f60-000000000003",
+      "name": "Prüfung anfordern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "Verordnungs-Check – Ergebnis",
+        "completionMessage": "={{ $json.output }}"
+      },
+      "id": "d4e5f6a7-4444-4d5e-8f60-000000000004",
+      "name": "Ergebnis anzeigen",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Verordnung erfassen": {
+      "main": [
+        [
+          {
+            "node": "Verordnung bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verordnung bauen": {
+      "main": [
+        [
+          {
+            "node": "Prüfung anfordern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prüfung anfordern": {
+      "main": [
+        [
+          {
+            "node": "Ergebnis anzeigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

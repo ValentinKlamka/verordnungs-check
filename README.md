@@ -25,15 +25,20 @@ Die Rezeption entscheidet. Das System gibt Empfehlungen, es weist nichts automat
 
 ## Eingabe: ausgefüllte Verordnung statt Freitext
 
-Zwei Wege führen in dieselbe Prüfung:
+Drei Wege führen in dieselbe Prüfung:
 
-1. **Erfassungsmaske** (Standard für die Rezeption): Der Vordruck Muster 13 wird am
-   Bildschirm ausgefüllt – dieselbe Geometrie wie das Papier, inklusive
+1. **Erfassungsmaske** (A5-Vordruck am Bildschirm, für die Demo): Der Vordruck
+   Muster 13 wird ausgefüllt – dieselbe Geometrie wie das Papier, inklusive
    Ankreuzfeldern für Zuzahlung, Bereich, Leitsymptomatik und Hausbesuch. Ein Klick
    auf **Verordnung prüfen** schickt die Angaben als strukturiertes JSON an den
    Workflow; Ampel, Befunde und Fundstellen erscheinen daneben.
    Start: `npm run formular` → [`formular/muster13.html`](formular/README.md).
-2. **Freitext im Chat**: Liegt die Verordnung nur als Text vor, erfasst ein
+2. **n8n-Formular** (Standardweg, alles in n8n): `http://localhost:5678/form/verordnung`
+   zeigt ein von n8n gerendertes Formular mit denselben Feldern. Nach dem Absenden
+   prüft der Workflow und die Abschlussseite zeigt Ampel, Tabelle und Prüfpunkte.
+   Workflow: [`n8n/formular.json`](n8n/formular.json) (Form Trigger → Mapping →
+   Aufruf des Prüf-Workflows → Ergebnisseite).
+3. **Freitext im Chat**: Liegt die Verordnung nur als Text vor, erfasst ein
    LLM-Agent sie im festen Schema. Fehlende Angaben werden `null`, nichts wird
    geraten.
 
@@ -147,6 +152,7 @@ Supabase und muss nur geladen werden, wenn die Instanz auf ein anderes Projekt z
 | `n8n/` | Exportierte Workflows (.json) |
 | `scripts/` | Hilfsskripte für die lokale n8n-Instanz (Import vorbereiten) |
 | `formular/` | Erfassungsmaske Muster 13 (Eingabe), Beispieldaten, kein Build |
+| `n8n/formular.json` | n8n-Formular (Form Trigger) mit denselben Feldern, Abschlussseite mit Ergebnis |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
 | `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`) und für die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test` |
@@ -176,9 +182,11 @@ Geplant für Sprint 2: Verordnungsfall-Prüfung (Folgeverordnungen, orientierend
 Offen: Ist-Interview mit der Praxis, Business Case, EU-AI-Act-Einordnung, Präsentation.
 
 Ergänzung 18.10.2026: Die Verordnung ist die **Eingabe**, das Ergebnis ist die
-**Prüfung**. Dafür gibt es jetzt die Erfassungsmaske in [`formular/`](formular/README.md)
-(`npm run formular`), die strukturiertes JSON an den Workflow schickt; der Freitext-Chat
-bleibt als zweiter Weg. Feldzuordnung und Auswahlregel:
+**Prüfung**. Dafür gibt es zwei Eingabemasken – die A5-Erfassungsmaske in
+[`formular/`](formular/README.md) (`npm run formular`) für die Demo und das
+n8n-Formular unter `http://localhost:5678/form/verordnung` als Standardweg –, die
+beide strukturiertes JSON an den Workflow schicken; der Freitext-Chat bleibt als
+dritter Weg. Feldzuordnung und Auswahlregel:
 [`docs/vordruck-muster13.md`](docs/vordruck-muster13.md). Die frühere Vorschau der
 ausgefüllten Verordnung entfällt – sie hätte den Vordruck nur noch einmal gezeigt.
 

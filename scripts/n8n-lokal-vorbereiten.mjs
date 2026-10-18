@@ -58,6 +58,13 @@ console.log(
     `(webhookId=${WEBHOOK_ID_LOKAL}, ID=${lokal.id ?? 'neu'}, ${lokal.nodes.length} Knoten)`,
 );
 
+// Formular-Workflow: ruft den Chat-Webhook des Prüf-Workflows auf.
+const formularLokal = lies('n8n/formular.json');
+writeFileSync(`${ORDNER_TMP}/formular-lokal.json`, JSON.stringify(formularLokal, null, 2) + '\n');
+console.log(
+  `${ORDNER_TMP}/formular-lokal.json geschrieben (Formular auf /form/${formularLokal.nodes.find((n) => n.type.includes('formTrigger')).parameters.path})`,
+);
+
 /* ------------------------------------------- 2. fremde Instanz (Docker) --- */
 if (!existsSync(QUELLE_CREDENTIALS)) {
   console.log(
@@ -98,9 +105,17 @@ for (const n of fremd.nodes) {
   }
 }
 writeFileSync(`${ORDNER_FREMD}/vier-pruefer.json`, JSON.stringify(fremd, null, 2) + '\n');
+
+// Formular-Workflow für dieselbe Instanz (ruft den Chat-Webhook auf).
+const formular = lies('n8n/formular.json');
+formular.id = ids.formular ?? (ids.formular = neueId());
+writeFileSync(`${ORDNER_FREMD}/formular.json`, JSON.stringify(formular, null, 2) + '\n');
+
 writeFileSync(idDatei, JSON.stringify(ids, null, 2) + '\n');
 
-console.log(`${ORDNER_FREMD}/credentials.json und vier-pruefer.json geschrieben`);
+console.log(`${ORDNER_FREMD}/credentials.json, vier-pruefer.json und formular.json geschrieben`);
 console.log(`  Workflow-ID: ${fremd.id}  (n8n update:workflow --id=${fremd.id} --active=true)`);
+console.log(`  Formular-ID: ${formular.id}  (n8n update:workflow --id=${formular.id} --active=true)`);
 console.log(`  Chat-Adresse nach der Aktivierung: /webhook/${WEBHOOK_ID_FREMD}/chat`);
+console.log(`  Formular nach der Aktivierung: /form/verordnung`);
 console.log(`  IDs gemerkt in ${idDatei} – bei erneutem Import bleiben sie gleich.`);

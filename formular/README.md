@@ -38,6 +38,24 @@ Verordnungsbedarf (über die ICD-Codes der Diagnoseliste). Die **Unterschrift** 
 als vorhanden, weil die Verordnung unterschrieben vorliegt; die **IK** trägt der
 Heilmittelerbringer ein und bleibt deshalb leer.
 
+## n8n-Formular (Standardweg)
+
+```bash
+npm run n8n:vorbereiten && npm run n8n      # Workflows importieren, Instanz starten
+```
+
+Danach `http://localhost:5678/form/verordnung` aufrufen: n8n rendert die Felder des
+Vordrucks (Pflichtfelder, Datumsfelder, Auswahllisten), das Absenden startet die
+Prüfung und die Abschlussseite zeigt Ampel, Tabelle und Prüfpunkte als Text. Der
+Workflow ([`formular.json`](../n8n/formular.json)) bildet die Formularfelder auf das
+Verordnung-Schema ab und ruft den Chat-Webhook des Prüf-Workflows auf
+(`http://127.0.0.1:5678/webhook/verordnungs-check/chat`) – deshalb muss der
+Prüf-Workflow aktiv sein. Bewusste Ja/Nein-Auswahlen statt Ankreuzfeldern, weil n8n
+Checkboxen im Formular standardmäßig auf „an" setzt.
+
+Beim Import per CLI in eine bestehende Instanz siehe die Hinweise in
+[`../n8n/README.md`](../n8n/README.md) (IDs, `webhookId`, Knoten-Reihenfolge).
+
 ## Was hier bewusst nicht passiert
 
 - **Keine Diagnoseauswahl.** Anders als beim Freitext-Chat bestimmt die Rezeption die
