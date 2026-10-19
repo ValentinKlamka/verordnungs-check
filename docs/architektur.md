@@ -12,9 +12,10 @@
    - Summe der Einheiten, Anzahl vorrangiger Heilmittel
 
    Die Prüf-Agenten erhalten diese Werte als „berechnete Fakten“, die für sie verbindlich sind. Abgesichert durch `tests/fakten.test.mjs`.
-5. **Vier Prüf-Agenten:** Jeder Agent bekommt die Verordnung und die berechneten Fakten und liefert Befunde im gemeinsamen JSON-Schema. Formal-, Diagnose- und Mengen-Prüfer durchsuchen dafür ihren Ausschnitt der Wissensbasis (Vektorsuche); der **Fristen-Prüfer arbeitet ohne Werkzeug**, weil sein Mandat vollständig durch die berechneten Fakten bestimmt ist und die Fundstelle feststeht (§ 15 HeilM-RL) – das verhindert auch, dass er in einer erfolglosen Suchschleife endet. Alle Agenten sind auf Wiederholung gesetzt (`retryOnFail`, 3 Versuche), weil ein Modell gelegentlich mit einem Werkzeugaufruf statt JSON endet.
-6. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext – und die Diagnoseauswahl für Protokoll und Erfassungsmaske.
-7. **Protokoll:** Prüfung und Befunde werden in Supabase gespeichert.
+5. **PII entfernen (Code-Node):** Vor den Prüf-Agenten werden direkte Identifikatoren (Name, Geburtsdatum, Versichertennummer, LANR/BSNR, Arzt-/Praxisangaben) durch Marker wie `[Name]` ersetzt und Freitexte entfernt; das Original bleibt für Protokoll und Antwort erhalten. Im Freitext-Weg redigiert `Text redigieren` den Rohtext muster-basiert (best effort). Details und Grenzen: [`pii-redaktion.md`](pii-redaktion.md). Abgesichert durch `tests/pii.test.mjs`.
+6. **Vier Prüf-Agenten:** Jeder Agent bekommt die redigierte Verordnung und die berechneten Fakten und liefert Befunde im gemeinsamen JSON-Schema. Formal-, Diagnose- und Mengen-Prüfer durchsuchen dafür ihren Ausschnitt der Wissensbasis (Vektorsuche); der **Fristen-Prüfer arbeitet ohne Werkzeug**, weil sein Mandat vollständig durch die berechneten Fakten bestimmt ist und die Fundstelle feststeht (§ 15 HeilM-RL) – das verhindert auch, dass er in einer erfolglosen Suchschleife endet. Alle Agenten sind auf Wiederholung gesetzt (`retryOnFail`, 3 Versuche), weil ein Modell gelegentlich mit einem Werkzeugaufruf statt JSON endet.
+7. **Ergebnis zusammenführen (Code-Node):** Ampel (rot / gelb / grün), Absetzungsrisiko, Antworttext – und die Diagnoseauswahl für Protokoll und Erfassungsmaske.
+8. **Protokoll:** Prüfung und Befunde werden in Supabase gespeichert.
 
 **Ab Sprint 2 (Verordnungsfall-Prüfung):** Zwischen Schritt 4 und 5 kommen zwei Komponenten dazu:
 
@@ -22,7 +23,7 @@
 - **Verordnungsfall berechnen** (Code-Node): summiert die Einheiten und prüft die 6-Monats-Regel (§ 7 HeilM-RL).
 
 Das Ergebnis geht als berechneter Fakt an den Mengen-Prüfer. Jede geprüfte Verordnung wird in die Historie geschrieben. Details: [`dateneingang.md`](dateneingang.md).
-8. **Antwort:** Die Rezeption erhält Ampel, Korrekturhinweise und Fundstellen.
+9. **Antwort:** Die Rezeption erhält Ampel, Korrekturhinweise und Fundstellen.
 
 ## Befund-Schema
 

@@ -11,7 +11,7 @@
     "n8n:import:credentials": "n8n import:credentials --separate --input=./.n8n/credentials",
     "n8n:execute": "n8n execute",
     "formular": "node scripts/formular-server.mjs",
-    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/formular.test.mjs"
+    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/pii.test.mjs && node tests/formular.test.mjs"
   },
   "devDependencies": {
     "n8n": "2.43.5"

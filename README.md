@@ -44,7 +44,19 @@ Drei Wege führen in dieselbe Prüfung:
 
 Der Workflow erkennt strukturiertes JSON selbst (`Eingabe prüfen` → `Verordnung
 strukturiert?`) und überspringt dann den Extraktor; die vier Prüfer laufen in beiden
-Fällen identisch. Zwei Dinge sind dabei fachlich entscheidend
+Fällen identisch.
+
+## Datenschutz: keine Personendaten an die Agenten
+
+Vor den Prüf-Agenten steht der Code-Node **PII entfernen**. Er ersetzt Namen,
+Geburtsdatum, Versichertennummer, LANR/BSNR sowie Arzt- und Praxisangaben durch Marker
+wie `[Name]` und entfernt Freitextfelder; das Original bleibt für Protokoll und Antwort
+erhalten. Im Freitext-Weg redigiert `Text redigieren` den Rohtext muster-basiert
+(best effort). Was entfernt wird, was bleibt, wo noch Rohdaten liegen (n8n-Ausführungen,
+Supabase-Protokoll) und welche Grenzen der Freitext-Weg hat, steht in
+[`docs/pii-redaktion.md`](docs/pii-redaktion.md) – geprüft mit `tests/pii.test.mjs`.
+
+Zwei Dinge sind dabei fachlich entscheidend
 ([`docs/vordruck-muster13.md`](docs/vordruck-muster13.md)):
 
 - Auf den Vordruck passen **zwei ICD-10-GM-Codes**. Im Formular wählt sie die
@@ -155,8 +167,8 @@ Supabase und muss nur geladen werden, wenn die Instanz auf ein anderes Projekt z
 | `n8n/formular.json` | n8n-Formular (Form Trigger) mit denselben Feldern, Abschlussseite mit Ergebnis |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
-| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`) und für die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test` |
-| `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13 |
+| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`), die PII-Redaktion (`node tests/pii.test.mjs`) und die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test` |
+| `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13, PII-Redaktion |
 
 ## Team
 

@@ -3,7 +3,7 @@
 | Datei | Workflow | Zweck |
 |---|---|---|
 | `wissensbasis-laden.json` | Verordnungs-Check – Wissensbasis laden | Lädt die Regelwerke als PDF, teilt sie in Abschnitte, erzeugt Embeddings und speichert sie in Supabase |
-| `vier-pruefer.json` | Verordnungs-Check – Vier Prüfer | Chat, Erfassung, Auswahl der zwei ICD-10-Zeilen, vier Prüf-Agenten, Ampel, Protokoll |
+| `vier-pruefer.json` | Verordnungs-Check – Vier Prüfer | Chat, Erfassung, PII-Redaktion, Auswahl der zwei ICD-10-Zeilen, vier Prüf-Agenten, Ampel, Protokoll |
 | `formular.json` | Verordnungs-Check – Formular | n8n-Formular (Form Trigger) mit den Feldern des Vordrucks; ruft den Chat-Webhook des Prüf-Workflows auf und zeigt das Ergebnis auf der Abschlussseite |
 
 Import: n8n → Workflows → Import from File. Danach die Credentials setzen:
