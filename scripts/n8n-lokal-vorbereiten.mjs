@@ -114,8 +114,8 @@ writeFileSync(`${ORDNER_FREMD}/formular.json`, JSON.stringify(formular, null, 2)
 writeFileSync(idDatei, JSON.stringify(ids, null, 2) + '\n');
 
 console.log(`${ORDNER_FREMD}/credentials.json, vier-pruefer.json und formular.json geschrieben`);
-console.log(`  Workflow-ID: ${fremd.id}  (n8n update:workflow --id=${fremd.id} --active=true)`);
-console.log(`  Formular-ID: ${formular.id}  (n8n update:workflow --id=${formular.id} --active=true)`);
+console.log(`  Workflow-ID: ${fremd.id}  (n8n publish:workflow --id=${fremd.id})`);
+console.log(`  Formular-ID: ${formular.id}  (n8n publish:workflow --id=${formular.id})`);
 console.log(`  Chat-Adresse nach der Aktivierung: /webhook/${WEBHOOK_ID_FREMD}/chat`);
 console.log(`  Formular nach der Aktivierung: /form/verordnung`);
 console.log(`  IDs gemerkt in ${idDatei} – bei erneutem Import bleiben sie gleich.`);

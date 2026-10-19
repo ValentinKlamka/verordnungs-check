@@ -86,6 +86,8 @@ window.BEISPIEL_WORKFLOW_AUSGABE = {
       therapiebericht: false,
       hausbesuch: false,
       dringlich: false,
+      // Auf dem Vordruck liegt die Unterschrift vor (Stempelfeld) – die Maske sendet sie immer mit.
+      unterschrift: true,
       therapieziele_hinweise:
         "Schmerzreduktion und Aufbau der Rumpfstabilität; Anleitung zu einem Heimprogramm.",
       // --- Prüfgrundlage (nicht Teil des Vordrucks) ---

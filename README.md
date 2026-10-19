@@ -117,6 +117,7 @@ Workflows und Wissensbasis:
 npm run n8n:vorbereiten                       # Import-Datei für die lokale Instanz erzeugen (webhookId + Workflow-ID)
 npx n8n import:workflow --input=.n8n/tmp/vier-pruefer-lokal.json
 npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import aktivieren
+# n8n ≥ 2.20: n8n publish:workflow --id=<workflow-id>
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
 npm run formular                            # Erfassungsmaske auf http://127.0.0.1:4321
@@ -141,6 +142,7 @@ docker cp .n8n/tmp/import-fremdinstanz/vier-pruefer.json <container>:/tmp/
 docker exec <container> n8n import:credentials --input=/tmp/credentials.json
 docker exec <container> n8n import:workflow    --input=/tmp/vier-pruefer.json
 docker exec <container> n8n update:workflow --id=<workflow-id> --active=true
+# ab n8n 2.20 (z. B. 2.20.8): docker exec <container> n8n publish:workflow --id=<workflow-id>
 docker restart <container>
 ```
 

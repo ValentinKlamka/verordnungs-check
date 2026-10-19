@@ -151,6 +151,57 @@ pruefe('Berechnete Fakten gehen unverändert an die Prüfer', () => {
   assert.deepEqual(ergebnis.fakten, fakten);
 });
 
+// --- 4b. Pflichtangaben: die Redaktion ersetzt Werte durch Marker, die Prüfer brauchen die Fakten ---
+const faktenCode = wf.nodes.find((n) => n.name === 'Fristen berechnen').parameters.jsCode;
+const rechneFakten = (vo) => new Function('$input', faktenCode)({ first: () => ({ json: { output: vo } }) })[0].json.fakten;
+
+pruefe('Pflichtangaben werden vor der Redaktion ermittelt', () => {
+  const f = rechneFakten(verordnung).pflichtangaben;
+  assert.equal(f.lanr, true, 'LANR ist ausgefüllt, auch wenn später nur [LANR] beim Prüfer ankommt');
+  assert.equal(f.bsnr, true);
+  assert.equal(f.unterschrift, true);
+  assert.equal(f.diagnosegruppe, true);
+  assert.equal(f.frequenz, true);
+});
+
+pruefe('Fehlende Angaben bleiben in den Pflichtangaben false', () => {
+  const f = rechneFakten({ ...verordnung, lanr: null, unterschrift: null, frequenz: '  ' }).pflichtangaben;
+  assert.equal(f.lanr, false);
+  assert.equal(f.unterschrift, false);
+  assert.equal(f.frequenz, false);
+});
+
+pruefe('Redigierte Marker gelten als ausgefüllt, aber mit unprüfbarem Format', () => {
+  const f = rechneFakten({ ...verordnung, lanr: '[LANR]', bsnr: '[BSNR]' });
+  assert.equal(f.pflichtangaben.lanr, true);
+  assert.equal(f.pflichtangaben.bsnr, true);
+  assert.equal(f.lanr_format_ok, null, 'null = nicht prüfbar, nicht false = fehlerhaft');
+  assert.equal(f.bsnr_format_ok, null);
+});
+
+pruefe('Echte Werte werden weiterhin auf 9 Ziffern geprüft', () => {
+  const gut = rechneFakten({ ...verordnung, lanr: '123456789', bsnr: '987654300' });
+  assert.equal(gut.lanr_format_ok, true);
+  assert.equal(gut.bsnr_format_ok, true);
+  const schlecht = rechneFakten({ ...verordnung, lanr: '1234' });
+  assert.equal(schlecht.lanr_format_ok, false);
+});
+
+pruefe('Der Extraktor übernimmt Marker als Wert', () => {
+  const prompt = wf.nodes.find((n) => n.name === 'Verordnung erfassen').parameters.options.systemMessage;
+  assert.match(prompt, /eckigen Klammern/);
+  assert.match(prompt, /Übernimm den Marker/);
+});
+
+pruefe('Die Prüfer-Regel verweist auf die Pflichtangaben und erklärt Marker', () => {
+  const formal = wf.nodes.find((n) => n.name === 'Formal-Prüfer').parameters.options.systemMessage;
+  assert.match(formal, /pflichtangaben/);
+  for (const name of ['Formal-Prüfer', 'Diagnose-Prüfer', 'Mengen-Prüfer', 'Fristen-Prüfer']) {
+    const s = wf.nodes.find((n) => n.name === name).parameters.options.systemMessage;
+    assert.match(s, /eckigen Klammern/, `${name} erklärt die Marker nicht`);
+  }
+});
+
 // --- 5. Freitext-Eingang (Chat) ---
 const text = redigieren({
   modus: 'freitext',
@@ -175,6 +226,82 @@ pruefe('Freitext: medizinische Angaben und Ausstellungsdatum bleiben', () => {
   assert.match(text, /Lumboischialgie/);
   assert.match(text, /Diagnosegruppe WS/);
   assert.match(text, /15\.10\.2026/, 'Ausstellungsdatum wird für die Fristprüfung gebraucht');
+});
+
+// --- 5b. Weitere Muster im Freitext ---
+const weitere = (eingabe) => redigieren({ modus: 'freitext', text: eingabe }).text;
+
+pruefe('Freitext: "geboren am" wird wie "geb. am" behandelt', () => {
+  const t = weitere('Die Patientin ist geboren am 03.09.1985 in Musterstadt.');
+  assert.doesNotMatch(t, /03\.09\.1985/);
+});
+
+pruefe('Freitext: Arztname mit Titel wird entfernt', () => {
+  const t = weitere('Verordnet von Dr. med. Anna Beispiel, Fachrichtung Orthopädie.');
+  assert.doesNotMatch(t, /Anna Beispiel/);
+  assert.match(t, /\[Arzt\]/);
+});
+
+pruefe('Freitext: Praxisname wird entfernt', () => {
+  const t = weitere('Praxis am Musterplatz, Termin am 20.10.2026.');
+  assert.doesNotMatch(t, /Musterplatz/);
+  assert.match(t, /20\.10\.2026/, 'Termine bleiben erhalten');
+});
+
+pruefe('Freitext: Postleitzahl mit Ort wird entfernt', () => {
+  const t = weitere('Wohnhaft in 12345 Musterstadt.');
+  assert.doesNotMatch(t, /Musterstadt/);
+});
+
+pruefe('Freitext: Telefon mit Label und Name-Zeile werden entfernt', () => {
+  const t = weitere('Tel. 0170 1234567, Name: Mustermann');
+  assert.doesNotMatch(t, /0170 1234567/);
+  assert.doesNotMatch(t, /Mustermann/);
+});
+
+pruefe('Bekannte Grenze: Name ohne Rollenwort bleibt stehen (dokumentiert)', () => {
+  // Ehrlich getestet: ein Regex erkennt "Mustermann klagt über ..." nicht sicher als Namen.
+  const t = weitere('Mustermann klagt über Rückenschmerzen.');
+  assert.match(t, /Mustermann/, 'ohne Rollenwort keine Erkennung – deshalb ist der Formularweg der sichere Weg');
+});
+
+pruefe('ICD-Codes direkt hinter einem Namen bleiben erhalten', () => {
+  const t = weitere('Bandscheibenschäden bei Frau Müller M51.1, Lumboischialgie M54.4.');
+  assert.doesNotMatch(t, /Müller/);
+  assert.match(t, /M51\.1/);
+  assert.match(t, /M54\.4/);
+});
+
+pruefe('Geburtsdatum mit führender Null wird nicht als Telefonnummer ersetzt', () => {
+  const t = weitere('Patientin Erika Mustermann, geb. 03.04.1958, wohnhaft Rosenweg 12.');
+  assert.match(t, /\[Geburtsdatum\]/);
+  assert.doesNotMatch(t, /1958/);
+});
+
+pruefe('LANR und BSNR werden auch im Freitext maskiert', () => {
+  const t = weitere('Verordnet von Dr. med. Anna Beispiel, LANR 123456789, BSNR 987654300.');
+  assert.doesNotMatch(t, /123456789/);
+  assert.doesNotMatch(t, /987654300/);
+  assert.match(t, /\[LANR\]/);
+  assert.match(t, /\[BSNR\]/);
+});
+
+pruefe('Telefon- und Praxis-Muster schlucken den Folgetext nicht', () => {
+  const t = weitere('Telefon 0721 445566, E-Mail egal. Praxis am Markt. Diagnose M54.4.');
+  assert.match(t, /\[Telefon\], E-Mail/, 'Komma und Folgetext bleiben stehen');
+  assert.match(t, /\[Praxis\]\.\s*Diagnose/, 'Satzgrenze hinter dem Praxisnamen bleibt');
+});
+
+pruefe('Scheitert der Extraktor, antwortet der Workflow mit einem Hinweis statt HTTP 500', () => {
+  const erfassen = wf.nodes.find((n) => n.name === 'Verordnung erfassen');
+  assert.equal(erfassen.onError, 'continueErrorOutput');
+  const fehlerzweig = wf.connections['Verordnung erfassen'].main[1][0].node;
+  assert.equal(fehlerzweig, 'Hinweis Freitext');
+  const hinweis = wf.nodes.find((n) => n.name === 'Hinweis Freitext');
+  assert.match(hinweis.parameters.assignments.assignments[0].value, /Formular/);
+  assert.equal(hinweis.parameters.assignments.assignments[0].name, 'output', 'der Chat liest das Feld output');
+  const trigger = wf.nodes.find((n) => n.name === 'Rezeption: Verordnung eingeben');
+  assert.equal(trigger.parameters.options.responseMode, 'lastNode', 'sonst käme der Hinweis nie beim Chat an');
 });
 
 // --- 6. Verdrahtung im Workflow ---
