@@ -67,19 +67,46 @@ Zwei Dinge sind dabei fachlich entscheidend
 ## Architektur
 
 ```mermaid
-flowchart LR
-  A[Chat: Rezeption] --> B[Verordnung erfassen<br/>LLM + JSON-Schema]
-  B --> B2[Diagnosen auswählen<br/>Code]
-  B2 --> C[Fristen berechnen<br/>Code]
-  C --> D1[Formal-Prüfer]
-  C --> D2[Diagnose-Prüfer]
-  C --> D3[Mengen-Prüfer]
-  C --> D4[Fristen-Prüfer]
-  D1 & D2 & D3 & D4 --> E[Ergebnis zusammenführen<br/>Ampel + Risiko]
-  E --> F[(Supabase<br/>pruefungen, befunde)]
-  E --> G[Antwort an Rezeption]
-  K[(Supabase pgvector<br/>Regelwerke)] -.RAG.-> D1 & D2 & D3 & D4
+flowchart TB
+  subgraph EINGANG["Eingang – drei Wege in denselben Workflow"]
+    M["Erfassungsmaske Muster 13<br/>formular/ · npm run formular"]
+    F["n8n-Formular<br/>/form/verordnung"]
+    C["Chat<br/>Freitext"]
+  end
+
+  M -->|JSON| W["Eingabe prüfen<br/>Code"]
+  F -->|JSON| W
+  C --> W
+  W --> I{"Verordnung<br/>strukturiert?"}
+
+  I -->|ja| U["Verordnung übernehmen<br/>Code"]
+  I -->|nein| R["Text redigieren<br/>Code · best effort"]
+  R --> X["Verordnung erfassen<br/>LLM + JSON-Schema"]
+  X -.->|Fehler| H["Hinweis Freitext<br/>Antwort mit Verweis aufs Formular"]
+  X --> A["Diagnosen auswählen<br/>Code · zwei ICD-Zeilen"]
+
+  A --> B["Fristen berechnen<br/>Code: Fristen, Formate,<br/>Pflichtangaben"]
+  U --> B
+  B --> P["PII entfernen<br/>Code: Marker statt Identifikatoren"]
+
+  P --> D1["Formal-Prüfer"]
+  P --> D2["Diagnose-Prüfer"]
+  P --> D3["Mengen-Prüfer"]
+  P --> D4["Fristen-Prüfer<br/>ohne Werkzeug"]
+  KB[("Supabase pgvector<br/>Regelwerke · RAG")] -.-> D1 & D2 & D3
+
+  D1 & D2 & D3 & D4 --> S["Befunde sammeln<br/>Merge"]
+  S --> E["Ergebnis zusammenführen<br/>Ampel, Risiko, Antworttext"]
+  E --> L1["Prüfung protokollieren<br/>Supabase · pruefungen"]
+  L1 --> L2["Befunde vorbereiten<br/>Code"]
+  L2 --> L3["Befunde protokollieren<br/>Supabase · befunde"]
+  L3 --> G["Antwort an Rezeption"]
 ```
+
+Beide strukturierten Wege überspringen Extraktor und Diagnoseauswahl; alle drei Wege
+laufen danach durch dieselbe Redaktion, dieselben Prüfer und dieselbe Protokollierung.
+Der Fristen-Prüfer arbeitet ohne Werkzeug – sein Mandat ist durch die berechneten Fakten
+bestimmt.
 
 Details: [docs/architektur.md](docs/architektur.md)
 
