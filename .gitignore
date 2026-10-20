@@ -6,3 +6,7 @@ node_modules/
 # Lokale n8n-Instanz (Datenbank, Credentials, Protokolle)
 .n8n/
 
+# Python (Redaktionsdienst)
+__pycache__/
+*.pyc
+

@@ -1,15 +1,16 @@
-// Prüft die beiden Redaktions-Knoten aus dem Workflow-Export.
+// Prüft die PII-Redaktion im Workflow-Export.
 // Aufruf: node tests/pii.test.mjs
 //
 //  1. "PII entfernen" – was die Prüf-Agenten sehen (strukturierte Eingabe).
-//  2. "Text redigieren" – was der Extraktor im Freitext-Weg liest.
+//  2. Verdrahtung des Freitext-Wegs über den lokalen Redaktionsdienst (redaktion/).
+//     Die Muster selbst prüft redaktion/tests/test_regeln.py mit `npm run test:redaktion`.
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const wf = JSON.parse(readFileSync(new URL('../n8n/vier-pruefer.json', import.meta.url)));
-const code = (name) => wf.nodes.find((n) => n.name === name).parameters.jsCode;
+const knoten = (name) => wf.nodes.find((n) => n.name === name);
+const code = (name) => knoten(name).parameters.jsCode;
 const entfernen = (json) => new Function('$input', code('PII entfernen'))({ first: () => ({ json }) })[0].json;
-const redigieren = (json) => new Function('$input', code('Text redigieren'))({ first: () => ({ json }) })[0].json;
 
 const verordnung = {
   verordnung_ref: 'VO-20261019-1015',
@@ -202,94 +203,37 @@ pruefe('Die Prüfer-Regel verweist auf die Pflichtangaben und erklärt Marker', 
   }
 });
 
-// --- 5. Freitext-Eingang (Chat) ---
-const text = redigieren({
-  modus: 'freitext',
-  text: 'Patientin Erika Mustermann, geb. am 18.04.1972, Versichertennummer A123456789, Tel. 0170 1234567, erika@example.de, wohnhaft Musterstraße 12. Ausstellungsdatum 15.10.2026, ICD-10 M54.4 Lumboischialgie, Diagnosegruppe WS, 6x KG.',
-}).text;
-
-pruefe('Freitext: Name, Geburtsdatum und Versichertennummer sind entfernt', () => {
-  assert.doesNotMatch(text, /Mustermann/);
-  assert.doesNotMatch(text, /18\.04\.1972/);
-  assert.doesNotMatch(text, /A123456789/);
-  assert.match(text, /\[Name\]/);
+// --- 5. Freitext-Eingang: Verdrahtung auf den lokalen Redaktionsdienst ---
+// Die Muster selbst stehen in redaktion/regeln.py und werden dort getestet
+// (`npm run test:redaktion`), damit sie nur an einer Stelle gepflegt werden müssen.
+pruefe('Freitext-Weg ruft den lokalen Redaktionsdienst auf', () => {
+  assert.deepEqual(wf.connections['Verordnung strukturiert?'].main[1].map((c) => c.node), ['Text redigieren']);
+  const dienst = knoten('Text redigieren');
+  assert.equal(dienst.type, 'n8n-nodes-base.httpRequest', 'die Redaktion läuft nicht mehr als Code-Knoten');
+  assert.match(dienst.parameters.url, /:5680\/redigieren$/, 'Port 5678 gehört n8n selbst');
+  assert.equal(dienst.parameters.method, 'POST');
+  assert.match(dienst.parameters.jsonBody, /text/, 'der Rohtext geht an den Dienst');
 });
 
-pruefe('Freitext: Kontaktdaten und Anschrift sind entfernt', () => {
-  assert.doesNotMatch(text, /0170 1234567/);
-  assert.doesNotMatch(text, /erika@example\.de/);
-  assert.doesNotMatch(text, /Musterstraße 12/);
+pruefe('Ist der Dienst nicht erreichbar, wird der Text nicht an ein Modell geschickt', () => {
+  const dienst = knoten('Text redigieren');
+  assert.equal(dienst.onError, 'continueErrorOutput', 'fail-closed statt Weiterreichen des Rohtexts');
+  assert.equal(dienst.retryOnFail, true);
+  assert.deepEqual(wf.connections['Text redigieren'].main[1].map((c) => c.node), ['Hinweis Freitext']);
 });
 
-pruefe('Freitext: medizinische Angaben und Ausstellungsdatum bleiben', () => {
-  assert.match(text, /M54\.4/);
-  assert.match(text, /Lumboischialgie/);
-  assert.match(text, /Diagnosegruppe WS/);
-  assert.match(text, /15\.10\.2026/, 'Ausstellungsdatum wird für die Fristprüfung gebraucht');
+pruefe('Der redigierte Text behält Modus und Verordnungsfelder', () => {
+  assert.deepEqual(wf.connections['Text redigieren'].main[0].map((c) => c.node), ['Redaktion übernehmen']);
+  assert.deepEqual(wf.connections['Redaktion übernehmen'].main[0].map((c) => c.node), ['Verordnung erfassen']);
+  const quelle = code('Redaktion übernehmen');
+  assert.match(quelle, /\$\('Eingabe prüfen'\)/, 'modus/verordnung kommen aus "Eingabe prüfen"');
+  assert.match(quelle, /text: antwort\.text/);
+  assert.match(quelle, /entfernt: antwort\.entfernt/);
 });
 
-// --- 5b. Weitere Muster im Freitext ---
-const weitere = (eingabe) => redigieren({ modus: 'freitext', text: eingabe }).text;
-
-pruefe('Freitext: "geboren am" wird wie "geb. am" behandelt', () => {
-  const t = weitere('Die Patientin ist geboren am 03.09.1985 in Musterstadt.');
-  assert.doesNotMatch(t, /03\.09\.1985/);
-});
-
-pruefe('Freitext: Arztname mit Titel wird entfernt', () => {
-  const t = weitere('Verordnet von Dr. med. Anna Beispiel, Fachrichtung Orthopädie.');
-  assert.doesNotMatch(t, /Anna Beispiel/);
-  assert.match(t, /\[Arzt\]/);
-});
-
-pruefe('Freitext: Praxisname wird entfernt', () => {
-  const t = weitere('Praxis am Musterplatz, Termin am 20.10.2026.');
-  assert.doesNotMatch(t, /Musterplatz/);
-  assert.match(t, /20\.10\.2026/, 'Termine bleiben erhalten');
-});
-
-pruefe('Freitext: Postleitzahl mit Ort wird entfernt', () => {
-  const t = weitere('Wohnhaft in 12345 Musterstadt.');
-  assert.doesNotMatch(t, /Musterstadt/);
-});
-
-pruefe('Freitext: Telefon mit Label und Name-Zeile werden entfernt', () => {
-  const t = weitere('Tel. 0170 1234567, Name: Mustermann');
-  assert.doesNotMatch(t, /0170 1234567/);
-  assert.doesNotMatch(t, /Mustermann/);
-});
-
-pruefe('Bekannte Grenze: Name ohne Rollenwort bleibt stehen (dokumentiert)', () => {
-  // Ehrlich getestet: ein Regex erkennt "Mustermann klagt über ..." nicht sicher als Namen.
-  const t = weitere('Mustermann klagt über Rückenschmerzen.');
-  assert.match(t, /Mustermann/, 'ohne Rollenwort keine Erkennung – deshalb ist der Formularweg der sichere Weg');
-});
-
-pruefe('ICD-Codes direkt hinter einem Namen bleiben erhalten', () => {
-  const t = weitere('Bandscheibenschäden bei Frau Müller M51.1, Lumboischialgie M54.4.');
-  assert.doesNotMatch(t, /Müller/);
-  assert.match(t, /M51\.1/);
-  assert.match(t, /M54\.4/);
-});
-
-pruefe('Geburtsdatum mit führender Null wird nicht als Telefonnummer ersetzt', () => {
-  const t = weitere('Patientin Erika Mustermann, geb. 03.04.1958, wohnhaft Rosenweg 12.');
-  assert.match(t, /\[Geburtsdatum\]/);
-  assert.doesNotMatch(t, /1958/);
-});
-
-pruefe('LANR und BSNR werden auch im Freitext maskiert', () => {
-  const t = weitere('Verordnet von Dr. med. Anna Beispiel, LANR 123456789, BSNR 987654300.');
-  assert.doesNotMatch(t, /123456789/);
-  assert.doesNotMatch(t, /987654300/);
-  assert.match(t, /\[LANR\]/);
-  assert.match(t, /\[BSNR\]/);
-});
-
-pruefe('Telefon- und Praxis-Muster schlucken den Folgetext nicht', () => {
-  const t = weitere('Telefon 0721 445566, E-Mail egal. Praxis am Markt. Diagnose M54.4.');
-  assert.match(t, /\[Telefon\], E-Mail/, 'Komma und Folgetext bleiben stehen');
-  assert.match(t, /\[Praxis\]\.\s*Diagnose/, 'Satzgrenze hinter dem Praxisnamen bleibt');
+pruefe('Ohne Text vom Dienst bricht der Knoten ab (kein stiller Durchlauf)', () => {
+  const quelle = code('Redaktion übernehmen');
+  assert.match(quelle, /throw new Error\(/);
 });
 
 pruefe('Scheitert der Extraktor, antwortet der Workflow mit einem Hinweis statt HTTP 500', () => {
@@ -299,6 +243,7 @@ pruefe('Scheitert der Extraktor, antwortet der Workflow mit einem Hinweis statt 
   assert.equal(fehlerzweig, 'Hinweis Freitext');
   const hinweis = wf.nodes.find((n) => n.name === 'Hinweis Freitext');
   assert.match(hinweis.parameters.assignments.assignments[0].value, /Formular/);
+  assert.match(hinweis.parameters.assignments.assignments[0].value, /Redaktionsdienst/);
   assert.equal(hinweis.parameters.assignments.assignments[0].name, 'output', 'der Chat liest das Feld output');
   const trigger = wf.nodes.find((n) => n.name === 'Rezeption: Verordnung eingeben');
   assert.equal(trigger.parameters.options.responseMode, 'lastNode', 'sonst käme der Hinweis nie beim Chat an');
@@ -311,9 +256,10 @@ pruefe('Alle vier Prüfer hängen hinter der Redaktion', () => {
   assert.deepEqual(wf.connections['Fristen berechnen'].main[0].map((c) => c.node), ['PII entfernen']);
 });
 
-pruefe('Der Freitext-Weg läuft über die Textredaktion', () => {
+pruefe('Der Freitext-Weg läuft über den Redaktionsdienst', () => {
   assert.deepEqual(wf.connections['Verordnung strukturiert?'].main[1].map((c) => c.node), ['Text redigieren']);
-  assert.deepEqual(wf.connections['Text redigieren'].main[0].map((c) => c.node), ['Verordnung erfassen']);
+  assert.deepEqual(wf.connections['Text redigieren'].main[0].map((c) => c.node), ['Redaktion übernehmen']);
+  assert.deepEqual(wf.connections['Redaktion übernehmen'].main[0].map((c) => c.node), ['Verordnung erfassen']);
 });
 
 console.log(`\n${ok} Prüfungen bestanden`);

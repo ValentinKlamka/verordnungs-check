@@ -607,16 +607,39 @@
     },
     {
       "parameters": {
-        "jsCode": "// Redigiert Freitext (Chat-Eingang), bevor ihn der Extraktor liest.\n// Best effort über Muster – für echte Patientendaten ist der Formularweg gedacht.\nconst saeubere = (text) => {\n  if (typeof text !== \"string\" || text.trim() === \"\") return { text, entfernt: [] };\n  const entfernt = [];\n  let s = text;\n  const ersetze = (muster, ersatz, label) => {\n    const vorher = s;\n    s = s.replace(muster, ersatz);\n    if (s !== vorher && !entfernt.includes(label)) entfernt.push(label);\n  };\n\n  // Geburtsdatum zuerst – sonst greift die Telefonnummern-Regel (03.04.1958 sieht wie eine Nummer aus)\n  ersetze(/\\b(?:geb(?:oren|\\.)?\\s*(?:am)?|Geb\\.?-?Datum|Geburtsdatum)\\s*:?\\s*\\d{1,2}\\.\\d{1,2}\\.\\d{4}/gi, \"[Geburtsdatum]\", \"Geburtsdatum\");\n\n  // Versichertennummer (KVNR: Buchstabe + 8-10 Ziffern) – ICD-Codes haben einen Punkt\n  ersetze(/\\b[A-Z]{1,2}\\d{8,10}\\b/g, \"[Versichertennummer]\", \"Versichertennummer\");\n  ersetze(/[\\w.+-]+@[\\w-]+\\.[\\w.]{2,}/g, \"[E-Mail]\", \"E-Mail\");\n  ersetze(/\\b(?:Tel\\.?|Telefon|Mobil|Handy|Fax)\\s*:?\\s*\\+?[\\d \\t/()-]{6,}\\d/gi, \"[Telefon]\", \"Telefonnummer\");\n  // Ziffernfolge wie eine Telefonnummer, aber Datumswerte (03.04.1958) ausnehmen\n  ersetze(/(?:\\+49|0049|0)[ \\t\\d/.-]{6,}\\d/g, (m) => (/^\\d{1,2}\\.\\d{1,2}\\.\\d{4}$/.test(m.trim()) ? m : \"[Telefon]\"), \"Telefonnummer\");\n  ersetze(/\\bDE\\d{2}(?:[ ]?\\d{4}){4}[ ]?\\d{2}\\b/g, \"[IBAN]\", \"IBAN\");\n  ersetze(/\\b[A-Z]{2}\\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}[ ]?[A-Z0-9]{0,2}\\b/g, \"[IBAN]\", \"IBAN\");\n  ersetze(/\\bLANR\\s*:?\\s*\\d{6,10}\\b/gi, \"LANR [LANR]\", \"LANR\");\n  ersetze(/\\bBSNR\\s*:?\\s*\\d{6,10}\\b/gi, \"BSNR [BSNR]\", \"BSNR\");\n\n  // Rollenwort + Name (auch Beugungen: Herrn, Patienten, Angehörige …)\n  ersetze(/\\b(Patient(?:in|en)?|Versicherte(?:r|n)?|Herr(?:n)?|Frau(?:en)?|Kind(?:er)?|Sohn|Tochter|Ehefrau|Ehemann|Lebenspartner(?:in)?|Mutter|Vater|Angehörige(?:r|n)?)\\s+(?:Dr\\.\\s*)?(?:med\\.\\s*)?[A-ZÄÖÜ][a-zäöüß-]+(?:\\s+[A-ZÄÖÜ][a-zäöüß-]+)*/g, (m, rolle) => rolle + \" [Name]\", \"Name\");\n  // Ärztin/Arzt ohne Rollenwort\n  ersetze(/\\bDr\\.\\s*(?:med\\.\\s*)?(?:dent\\.\\s*)?[A-ZÄÖÜ][a-zäöüß-]+(?:\\s+[A-ZÄÖÜ][a-zäöüß-]+)*/g, \"[Arzt]\", \"Arzt\");\n  ersetze(/\\b(?:Nach)?[Nn]ame\\s*:\\s*[^\\n;,]+/g, \"[Name]\", \"Name\");\n\n\n  // Anschrift: Straße + Hausnummer, PLZ + Ort, Praxisname\n  ersetze(/\\b[A-ZÄÖÜ][a-zäöüß]+(?:straße|str\\.|weg|allee|platz|ring|gasse|damm|ufer)\\s*\\d+[a-z]?\\b/gi, \"[Anschrift]\", \"Anschrift\");\n  ersetze(/\\b\\d{5}\\s+[A-ZÄÖÜ][a-zäöüß]+(?:\\s+[A-ZÄÖÜ][a-zäöüß]+)?/g, \"[PLZ Ort]\", \"Anschrift\");\n  ersetze(/\\bPraxis\\s+(?:(?:am|an der|im|für)\\s+)?(?:Dr\\.\\s*(?:med\\.\\s*)?)?[A-ZÄÖÜ][a-zäöüß-]+(?:\\s+[A-ZÄÖÜ][a-zäöüß-]+){0,2}/g, \"[Praxis]\", \"Praxis\");\n\n  return { text: s, entfernt };\n};\nconst eingang = $input.first().json;\nconst { text, entfernt } = saeubere(eingang.text ?? \"\");\nreturn [{ json: { ...eingang, text, redaktion: { entfernt } } }];\n"
+        "method": "POST",
+        "url": "http://host.docker.internal:5680/redigieren",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {}
       },
       "id": "e5f6a7b8-5555-4e6f-9a71-000000000002",
       "name": "Text redigieren",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        1456
+      ],
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "// Der Dienst liefert nur redigierten Text und Kategorien. Modus und Felder kommen\n// aus \"Eingabe prüfen\", damit der Extraktor unverändert weiterarbeiten kann.\nconst eingang = $('Eingabe prüfen').first().json;\nconst antwort = $input.first().json;\nif (typeof antwort.text !== 'string' || antwort.text.trim() === '') {\n  throw new Error('Redaktionsdienst lieferte keinen Text');\n}\nreturn [{ json: {\n  ...eingang,\n  text: antwort.text,\n  redaktion: {\n    entfernt: antwort.entfernt ?? [],\n    modell: antwort.modell ?? null,\n    dauer_ms: antwort.dauer_ms ?? null\n  }\n} }];",
+        "options": {}
+      },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         400,
-        1456
-      ]
+        1236
+      ],
+      "id": "a1b2c3d4-1111-4e5f-8a9b-0000000000c1",
+      "name": "Redaktion übernehmen"
     },
     {
       "parameters": {
@@ -625,7 +648,7 @@
             {
               "id": "hinweis-text",
               "name": "output",
-              "value": "Der Freitext konnte nicht in die Verordnung übernommen werden. Bitte die Angaben im Formular (Muster 13) erfassen – dort greift auch die vollständige PII-Redaktion.",
+              "value": "Der Freitext konnte nicht geprüft werden – der lokale Redaktionsdienst war nicht erreichbar oder die Eingabe ließ sich nicht erfassen. Bitte die Angaben im Formular (Muster 13) eintragen: Dort greift die vollständige PII-Redaktion.",
               "type": "string"
             }
           ]
@@ -1005,6 +1028,24 @@
       ]
     },
     "Text redigieren": {
+      "main": [
+        [
+          {
+            "node": "Redaktion übernehmen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hinweis Freitext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redaktion übernehmen": {
       "main": [
         [
           {

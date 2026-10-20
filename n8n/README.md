@@ -3,7 +3,7 @@
 | Datei | Workflow | Zweck |
 |---|---|---|
 | `wissensbasis-laden.json` | Verordnungs-Check – Wissensbasis laden | Lädt die Regelwerke als PDF, teilt sie in Abschnitte, erzeugt Embeddings und speichert sie in Supabase |
-| `vier-pruefer.json` | Verordnungs-Check – Vier Prüfer | Chat, Erfassung, PII-Redaktion, Auswahl der zwei ICD-10-Zeilen, vier Prüf-Agenten, Ampel, Protokoll |
+| `vier-pruefer.json` | Verordnungs-Check – Vier Prüfer | Chat, Erfassung, PII-Redaktion (lokaler Dienst im Freitext-Weg), Auswahl der zwei ICD-10-Zeilen, vier Prüf-Agenten, Ampel, Protokoll |
 | `formular.json` | Verordnungs-Check – Formular | n8n-Formular (Form Trigger) mit den Feldern des Vordrucks; ruft den Chat-Webhook des Prüf-Workflows auf und zeigt das Ergebnis auf der Abschlussseite |
 
 Import: n8n → Workflows → Import from File. Danach die Credentials setzen:
@@ -14,6 +14,8 @@ Import: n8n → Workflows → Import from File. Danach die Credentials setzen:
 Danach einmal **Wissensbasis laden** ausführen (füllt die Tabelle `documents`, rund 380 Abschnitte), dann den Chat im Workflow **Vier Prüfer** öffnen und eine Testverordnung aus `supabase/seed/testfaelle.sql` als JSON einfügen.
 
 Hinweis: Der Extraktor antwortet grundsätzlich mit dem JSON-Objekt und stellt keine Rückfragen. Fehlende Angaben sind `null` und werden von den Prüfern als „fehlt“ gemeldet – ein Rückfrage-Text des Modells würde am Structured Output Parser scheitern.
+
+Der Freitext-Weg ruft den lokalen Redaktionsdienst `redaktion/` unter `http://host.docker.internal:5680/redigieren` auf (Port 5678 gehört n8n). Läuft n8n als npm-Prozess, die URL im Knoten `Text redigieren` auf `http://127.0.0.1:5680` ändern. Ohne erreichbaren Dienst antwortet der Workflow mit dem Knoten `Hinweis Freitext`, statt unredigierten Text an ein Modell zu geben.
 
 Stand der Exporte: Version v4 nach der Evaluation vom 13.10.2026 (siehe `docs/evaluation.md`), am 15.10.2026 um den Code-Node **Diagnosen auswählen** und das erweiterte Schema `Verordnung` ergänzt, am 18.10.2026 um die Erfassungsmaske (`formular.json`) und den strukturierten Eingang im Prüf-Workflow.
 

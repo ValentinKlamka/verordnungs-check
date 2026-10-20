@@ -11,7 +11,12 @@
     "n8n:import:credentials": "n8n import:credentials --separate --input=./.n8n/credentials",
     "n8n:execute": "n8n execute",
     "formular": "node scripts/formular-server.mjs",
-    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/pii.test.mjs && node tests/formular.test.mjs"
+    "redaktion:bauen": "docker build -t verordnungs-check-redaktion:1.0 redaktion",
+    "redaktion:starten": "docker run -d --name pii-redaktion --restart unless-stopped -p 5680:5680 verordnungs-check-redaktion:1.0",
+    "redaktion:lokal": "python -m uvicorn app:app --app-dir redaktion --host 127.0.0.1 --port 5680",
+    "redaktion:pruefen": "node scripts/redaktion-pruefen.mjs",
+    "test": "node tests/fakten.test.mjs && node tests/diagnosen.test.mjs && node tests/pii.test.mjs && node tests/formular.test.mjs",
+    "test:redaktion": "python -m unittest discover -s redaktion/tests -t redaktion"
   },
   "devDependencies": {
     "n8n": "2.43.5"

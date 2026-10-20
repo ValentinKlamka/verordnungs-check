@@ -51,10 +51,13 @@ Fällen identisch.
 Vor den Prüf-Agenten steht der Code-Node **PII entfernen**. Er ersetzt Namen,
 Geburtsdatum, Versichertennummer, LANR/BSNR sowie Arzt- und Praxisangaben durch Marker
 wie `[Name]` und entfernt Freitextfelder; das Original bleibt für Protokoll und Antwort
-erhalten. Im Freitext-Weg redigiert `Text redigieren` den Rohtext muster-basiert
-(best effort). Was entfernt wird, was bleibt, wo noch Rohdaten liegen (n8n-Ausführungen,
-Supabase-Protokoll) und welche Grenzen der Freitext-Weg hat, steht in
-[`docs/pii-redaktion.md`](docs/pii-redaktion.md) – geprüft mit `tests/pii.test.mjs`.
+erhalten. Im Freitext-Weg redigiert zusätzlich ein **lokaler Redaktionsdienst**
+([`redaktion/`](redaktion/README.md), Port 5680) mit einem HuggingFace-Modell plus Regeln
+– Namen werden damit auch ohne Rollenwort erkannt. Ist der Dienst nicht erreichbar, wird
+der Freitext-Weg abgeschaltet statt unredigiert an ein Modell zu gehen. Was entfernt wird,
+was bleibt, wo noch Rohdaten liegen (n8n-Ausführungen, Supabase-Protokoll) und welche
+Grenzen der Freitext-Weg hat, steht in [`docs/pii-redaktion.md`](docs/pii-redaktion.md) –
+geprüft mit `tests/pii.test.mjs`, `npm run test:redaktion` und `npm run redaktion:pruefen`.
 
 Zwei Dinge sind dabei fachlich entscheidend
 ([`docs/vordruck-muster13.md`](docs/vordruck-muster13.md)):
@@ -80,9 +83,11 @@ flowchart TB
   W --> I{"Verordnung<br/>strukturiert?"}
 
   I -->|ja| U["Verordnung übernehmen<br/>Code"]
-  I -->|nein| R["Text redigieren<br/>Code · best effort"]
-  R --> X["Verordnung erfassen<br/>LLM + JSON-Schema"]
+  I -->|nein| R["Text redigieren<br/>lokaler Redaktionsdienst :5680"]
+  R --> R2["Redaktion übernehmen<br/>Code"]
+  R2 --> X["Verordnung erfassen<br/>LLM + JSON-Schema"]
   X -.->|Fehler| H["Hinweis Freitext<br/>Antwort mit Verweis aufs Formular"]
+  R -.->|Dienst nicht erreichbar| H
   X --> A["Diagnosen auswählen<br/>Code · zwei ICD-Zeilen"]
 
   A --> B["Fristen berechnen<br/>Code: Fristen, Formate,<br/>Pflichtangaben"]
@@ -103,10 +108,11 @@ flowchart TB
   L3 --> G["Antwort an Rezeption"]
 ```
 
-Beide strukturierten Wege überspringen Extraktor und Diagnoseauswahl; alle drei Wege
-laufen danach durch dieselbe Redaktion, dieselben Prüfer und dieselbe Protokollierung.
-Der Fristen-Prüfer arbeitet ohne Werkzeug – sein Mandat ist durch die berechneten Fakten
-bestimmt.
+Beide strukturierten Wege überspringen Redaktion, Extraktor und Diagnoseauswahl; alle drei
+Wege laufen danach durch dieselbe faktenbasierte Redaktion, dieselben Prüfer und dieselbe
+Protokollierung. Der Redaktionsdienst entscheidet nichts – er entfernt nur Identifikatoren
+(fail-closed: ist er nicht erreichbar, wird kein Modell aufgerufen). Der Fristen-Prüfer
+arbeitet ohne Werkzeug, sein Mandat ist durch die berechneten Fakten bestimmt.
 
 Details: [docs/architektur.md](docs/architektur.md)
 
@@ -115,6 +121,7 @@ Details: [docs/architektur.md](docs/architektur.md)
 - **n8n** – Orchestrierung, Chat-Oberfläche, vier AI-Agenten
 - **OpenRouter** – `google/gemini-3.1-flash-lite` für die Agenten, `google/gemini-embedding-001` (1536 Dimensionen) für die Vektorsuche
 - **Supabase** – PostgreSQL mit pgvector für die Wissensbasis und das Prüfprotokoll (EU-Region Frankfurt)
+- **Lokaler Redaktionsdienst** – Python/FastAPI mit `Davlan/bert-base-multilingual-cased-ner-hrl` (HuggingFace, im Image eingebacken, läuft offline) für die PII-Redaktion im Freitext-Weg
 
 ### n8n lokal starten (ohne Cloud-Zugang)
 
@@ -148,7 +155,12 @@ npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import a
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
 npm run formular                            # Erfassungsmaske auf http://127.0.0.1:4321
+npm run redaktion:bauen                     # lokaler Redaktionsdienst (PII) bauen
+npm run redaktion:starten                   # Dienst auf http://127.0.0.1:5680
 ```
+
+Port 5678 gehört n8n; der Redaktionsdienst für den Freitext-Weg läuft deshalb auf 5680
+(Details: [`redaktion/README.md`](redaktion/README.md)).
 
 Der Ordner `.n8n/` (Datenbank, Credentials, Schlüssel) ist per `.gitignore`
 ausgenommen. Nach einem Wechsel des Embedding-Modells muss die Wissensbasis
@@ -193,10 +205,11 @@ Supabase und muss nur geladen werden, wenn die Instanz auf ein anderes Projekt z
 | `n8n/` | Exportierte Workflows (.json) |
 | `scripts/` | Hilfsskripte für die lokale n8n-Instanz (Import vorbereiten) |
 | `formular/` | Erfassungsmaske Muster 13 (Eingabe), Beispieldaten, kein Build |
+| `redaktion/` | Lokaler Redaktionsdienst (HuggingFace-NER + Regeln) für den Freitext-Weg, Port 5680 |
 | `n8n/formular.json` | n8n-Formular (Form Trigger) mit denselben Feldern, Abschlussseite mit Ergebnis |
 | `supabase/migrations/` | Datenbankschema |
 | `supabase/seed/` | Synthetische Testverordnungen (7 Testfälle + 3 Kontrollfälle) |
-| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`), die PII-Redaktion (`node tests/pii.test.mjs`) und die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test` |
+| `tests/` | Automatische Tests für den Code-Anteil (`node tests/fakten.test.mjs`, `node tests/diagnosen.test.mjs`), die PII-Redaktion (`node tests/pii.test.mjs`) und die Erfassungsmaske (`node tests/formular.test.mjs`), zusammen mit `npm test`; die Regeln des Redaktionsdienstes prüft `npm run test:redaktion` |
 | `docs/` | Design-Briefing (Scope, Erfolgskriterien, Implementierungsweg, Architektur, Build-Plan), Dateneingang, Evaluation, Governance, Vordruck Muster 13, PII-Redaktion |
 
 ## Team
