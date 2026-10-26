@@ -45,15 +45,17 @@ npm run formular              # dann http://127.0.0.1:4321/vorlagen
 npm run vorlagen:pruefen      # dieselben Fälle per CLI gegen den Workflow
 ```
 
-Die Seite zeigt die zehn Testfälle aus [`../supabase/seed/testfaelle.sql`](../supabase/seed/testfaelle.sql)
-als Karten. Ein Klick auf **Prüfen** schickt den Fall als strukturiertes JSON an denselben
-Webhook und zeigt darunter Ampel, alle 18 Prüfpunkte und die Workflow-Antwort. Neben dem
-Ergebnis steht, ob es zur im Seed dokumentierten Erwartung passt („✅ Deckungsgleich" oder
-„⚠️ Abweichung: erwartet 🔴, erhalten 🟡").
+Die Seite zeigt die 23 Testfälle aus [`../supabase/seed/testfaelle.sql`](../supabase/seed/testfaelle.sql)
+als Karten – jeder Fall deckt mindestens eines der 18 Prüfkriterien ab
+(Zuordnung: [`../docs/pruefkriterien.md`](../docs/pruefkriterien.md)). Ein Klick auf
+**Prüfen** schickt den Fall als strukturiertes JSON an denselben Webhook und zeigt darunter
+Ampel, alle 18 Prüfpunkte und die Workflow-Antwort. Neben dem Ergebnis steht, ob es zur im
+Seed dokumentierten Erwartung passt („✅ Deckungsgleich" oder „⚠️ Abweichung: erwartet 🔴,
+erhalten 🟡").
 
-**Alle durchprüfen** arbeitet die zehn Fälle nacheinander ab und ergänzt eine Übersicht
-mit Erwartung, Ergebnis, offenen Punkten und Dauer – rund zwei Minuten, weil jeder Fall
-die vier Agenten durchläuft.
+**Alle durchprüfen** arbeitet die Fälle nacheinander ab und ergänzt eine Übersicht mit
+Erwartung, Ergebnis, offenen Punkten und Dauer – rund fünf Minuten, weil jeder Fall die
+vier Agenten durchläuft.
 
 Die Falldaten stehen in `vorlagen-daten.js` und werden **aus dem Seed erzeugt** – nicht von
 Hand pflegen:

@@ -108,13 +108,17 @@ const vorlagen = win2.VORLAGEN;
 // Die Daten müssen der Seed-Datei entsprechen – sonst laufen Demo und Evaluation auseinander.
 const seed = lies('supabase/seed/testfaelle.sql');
 const ausSeed = [...seed.matchAll(/\(\s*'([^']*)',\s*'(\{.*?\})',\s*'(\{.*?\})',\s*'([^']*)'\s*\)/gs)].map(
-  ([, name, verordnung, erwartet, beschreibung]) => ({
-    id: (name.match(/^(TF\d+)/) ?? [])[1],
-    name: name.replace(/^TF\d+\s+/, ''),
-    erwartet: JSON.parse(erwartet).gesamtstatus,
-    beschreibung,
-    verordnung: JSON.parse(verordnung),
-  }),
+  ([, name, verordnung, erwartet, beschreibung]) => {
+    const erwartung = JSON.parse(erwartet);
+    return {
+      id: (name.match(/^(TF\d+)/) ?? [])[1],
+      name: name.replace(/^TF\d+\s+/, ''),
+      erwartet: erwartung.gesamtstatus,
+      erwartete_befunde: erwartung.erwartet ?? [],
+      beschreibung,
+      verordnung: JSON.parse(verordnung),
+    };
+  },
 );
 assert.ok(ausSeed.length > 0, 'keine Testfälle im Seed gefunden');
 assert.deepEqual(vorlagen, ausSeed, 'vorlagen-daten.js weicht vom Seed ab – `npm run vorlagen:daten` ausführen');
@@ -122,8 +126,8 @@ assert.deepEqual(vorlagen, ausSeed, 'vorlagen-daten.js weicht vom Seed ab – `n
 for (const vorlage of vorlagen) {
   assert.match(vorlage.id, /^TF\d+$/);
   assert.ok(['gruen', 'gelb', 'rot'].includes(vorlage.erwartet), `${vorlage.id}: unbekannte Erwartung`);
-  assert.ok(vorlage.verordnung.icd10, `${vorlage.id}: ICD-Code fehlt`);
-  assert.ok(vorlage.verordnung.heilmittel?.length, `${vorlage.id}: kein Heilmittel`);
+  assert.ok(vorlage.verordnung.icd10 !== undefined, `${vorlage.id}: ICD-Feld fehlt`);
+  assert.ok(Array.isArray(vorlage.verordnung.heilmittel), `${vorlage.id}: heilmittel-Liste fehlt`);
 }
 
 // Die Seite muss strukturiertes JSON an den Chat-Webhook schicken (kein Freitext).
@@ -131,5 +135,27 @@ assert.match(vorlagenJs, /chatInput: JSON\.stringify\(vorlage\.verordnung\)/, 'V
 assert.match(vorlagenJs, /\/webhook\/verordnungs-check\/chat/, 'falscher Webhook');
 assert.match(lies('formular/vorlagen.html'), /vorlagen-daten\.js[\s\S]*vorlagen\.js/, 'Skripte in falscher Reihenfolge');
 console.log(`✓ Vorlagen-Seite: ${vorlagen.length} Fälle deckungsgleich mit dem Seed, Webhook verdrahtet`);
+
+// --- 7. Jedes der 18 Prüfkriterien hat mindestens einen Testfall ------------
+const { KRITERIEN, kriteriumFuer } = await import('../scripts/kriterien.mjs');
+assert.equal(KRITERIEN.length, 18, 'die Kriterienliste muss 18 Einträge haben');
+
+// Feldnamen aus dem Workflow: jedes Kriterium muss auf einen Befund passen können.
+const kriterienOhneFall = KRITERIEN.filter(
+  (k) => !ausSeed.some((fall) => fall.erwartete_befunde.some((b) => kriteriumFuer(b)?.nr === k.nr)),
+);
+assert.deepEqual(
+  kriterienOhneFall.map((k) => `${k.nr} ${k.name}`),
+  [],
+  'Kriterien ohne Testfall',
+);
+
+// Jeder erwartete Befund muss einem Kriterium zugeordnet sein (Tippfehler-Schutz).
+for (const fall of ausSeed) {
+  for (const befund of fall.erwartete_befunde) {
+    assert.ok(kriteriumFuer(befund), `${fall.id}: erwarteter Befund ohne Kriterium: ${befund.agent}/${befund.feld}`);
+  }
+}
+console.log(`✓ Alle 18 Prüfkriterien haben einen Testfall (${ausSeed.length} Fälle insgesamt)`);
 
 console.log('\nAlle Prüfungen der Erfassungsmaske bestanden');

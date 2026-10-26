@@ -43,9 +43,11 @@ Drei Wege führen in dieselbe Prüfung:
    geraten.
 
 Zum Ausprobieren ohne Tippen: Unter `npm run formular` → `http://127.0.0.1:4321/vorlagen`
-liegen die zehn Testfälle aus dem Seed als Karten. Ein Klick prüft den Fall und stellt
-das Ergebnis neben die dort dokumentierte Erwartung; `npm run vorlagen:pruefen` macht
-dasselbe per CLI und ist damit die Evaluationsschleife des Prototyps.
+liegen die 23 Testfälle aus dem Seed als Karten – jeder Fall deckt mindestens eines der
+18 Prüfkriterien ab ([`docs/pruefkriterien.md`](docs/pruefkriterien.md)). Ein Klick prüft
+den Fall und stellt das Ergebnis neben die dort dokumentierte Erwartung;
+`npm run vorlagen:pruefen` macht dasselbe per CLI, prüft die erwarteten Befunde und gibt
+eine Abdeckungstabelle der 18 Kriterien aus.
 
 Der Workflow erkennt strukturiertes JSON selbst (`Eingabe prüfen` → `Verordnung
 strukturiert?`) und überspringt dann den Extraktor; die vier Prüfer laufen in beiden

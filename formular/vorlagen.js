@@ -56,6 +56,8 @@ function baueKarte(vorlage) {
   zeile(fakten, "Heilmittel", (vo.heilmittel ?? []).map((h) => `${h.name} ${h.einheiten}x`).join(", ") || "–");
   zeile(fakten, "Ausstellung", vo.ausstellungsdatum ?? "–");
   zeile(fakten, "Erwartet", AMPEL_TEXT[vorlage.erwartet] ?? vorlage.erwartet);
+  const erwarteteBefunde = (vorlage.erwartete_befunde ?? []).map((b) => `${b.feld}`);
+  if (erwarteteBefunde.length) zeile(fakten, "Befund", erwarteteBefunde.join(", "));
 
   const aktionen = document.createElement("div");
   aktionen.className = "aktionen";

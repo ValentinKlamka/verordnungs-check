@@ -16,10 +16,12 @@ if (!zeilen.length) throw new Error("Keine Testfälle in testfaelle.sql gefunden
 const vorlagen = zeilen.map(([, name, verordnung, erwartet, beschreibung]) => {
   const id = (name.match(/^(TF\d+)/) ?? [])[1];
   if (!id) throw new Error(`Testfall ohne TF-Nummer: ${name}`);
+  const erwartung = JSON.parse(erwartet);
   return {
     id,
     name: name.replace(/^TF\d+\s+/, ""),
-    erwartet: JSON.parse(erwartet).gesamtstatus,
+    erwartet: erwartung.gesamtstatus,
+    erwartete_befunde: erwartung.erwartet ?? [],
     beschreibung,
     verordnung: JSON.parse(verordnung),
   };
