@@ -38,6 +38,33 @@ Verordnungsbedarf (über die ICD-Codes der Diagnoseliste). Die **Unterschrift** 
 als vorhanden, weil die Verordnung unterschrieben vorliegt; die **IK** trägt der
 Heilmittelerbringer ein und bleibt deshalb leer.
 
+## Vorlagen (Start mit dokumentierten Testfällen)
+
+```bash
+npm run formular              # dann http://127.0.0.1:4321/vorlagen
+npm run vorlagen:pruefen      # dieselben Fälle per CLI gegen den Workflow
+```
+
+Die Seite zeigt die zehn Testfälle aus [`../supabase/seed/testfaelle.sql`](../supabase/seed/testfaelle.sql)
+als Karten. Ein Klick auf **Prüfen** schickt den Fall als strukturiertes JSON an denselben
+Webhook und zeigt darunter Ampel, alle 18 Prüfpunkte und die Workflow-Antwort. Neben dem
+Ergebnis steht, ob es zur im Seed dokumentierten Erwartung passt („✅ Deckungsgleich" oder
+„⚠️ Abweichung: erwartet 🔴, erhalten 🟡").
+
+**Alle durchprüfen** arbeitet die zehn Fälle nacheinander ab und ergänzt eine Übersicht
+mit Erwartung, Ergebnis, offenen Punkten und Dauer – rund zwei Minuten, weil jeder Fall
+die vier Agenten durchläuft.
+
+Die Falldaten stehen in `vorlagen-daten.js` und werden **aus dem Seed erzeugt** – nicht von
+Hand pflegen:
+
+```bash
+npm run vorlagen:daten        # formular/vorlagen-daten.js neu schreiben
+```
+
+`tests/formular.test.mjs` vergleicht die Datei mit dem Seed und schlägt fehl, wenn beide
+auseinanderlaufen.
+
 ## n8n-Formular (Standardweg)
 
 ```bash
@@ -71,6 +98,8 @@ Beim Import per CLI in eine bestehende Instanz siehe die Hinweise in
 | `muster13.html` | Aufbau des Vordrucks (Kästen, Beschriftungen, Ankreuzfelder) |
 | `muster13.css` | A5-Darstellung, Druck, Eingabefelder |
 | `muster13.js` | Erzeugt die Eingabefelder, sammelt die Verordnung, ruft den Workflow, zeigt das Ergebnis |
+| `vorlagen.html` / `vorlagen.css` / `vorlagen.js` | Startseite mit den Testfällen: ein Klick prüft einen Fall und vergleicht mit der Erwartung |
+| `vorlagen-daten.js` | Die Testfälle als Daten – erzeugt aus dem Seed (`npm run vorlagen:daten`) |
 | `beispiel-workflow-ausgabe.js` | Synthetischer Physiotherapie-Fall für **Beispielfall** |
 
 Die Eingabefelder entstehen im Browser aus den markierten Wertfeldern des Vordrucks
@@ -80,6 +109,6 @@ laufen; `tests/formular.test.mjs` prüft das.
 ## Prüfen
 
 ```bash
-node tests/formular.test.mjs   # Feldgleichheit, Ankreuzfelder, Beispieldaten, Schemafelder
+node tests/formular.test.mjs   # Feldgleichheit, Ankreuzfelder, Beispieldaten, Schemafelder, Vorlagen
 npm test                       # alle Tests (Fakten, Diagnoseauswahl, Formular)
 ```

@@ -61,6 +61,7 @@ body {
 }
 
 .toolbar button,
+.toolbar .knopf,
 .toolbar .file span {
   display: inline-flex;
   align-items: center;
@@ -73,9 +74,11 @@ body {
   font: inherit;
   font-size: 0.82rem;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .toolbar button:hover,
+.toolbar .knopf:hover,
 .toolbar .file:hover span {
   background: #eaeff7;
 }

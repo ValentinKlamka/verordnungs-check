@@ -1,0 +1,173 @@
+/* Vorlagen-Seite: bewusst schmal gehalten, die Karten und Panels kommen aus muster13.css. */
+
+body.vorlagen {
+  background: #f4f6fa;
+}
+
+.vorlagen .buehne {
+  display: block;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 1.2rem 1rem 4rem;
+}
+
+.vorlagen .block + .block {
+  margin-top: 1.6rem;
+}
+
+.vorlagen h2 {
+  margin: 0 0 0.3rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.vorlagen .hinweis {
+  margin: 0 0 0.9rem;
+  font-size: 0.82rem;
+  max-width: 60rem;
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 0.8rem;
+}
+
+.fall {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #d6dce5;
+  border-radius: 0.6rem;
+  padding: 0.8rem 0.9rem;
+}
+
+.fall header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.fall .nr {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.fall h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.fall .beschreibung {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #2b333d;
+}
+
+.fall dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.1rem 0.5rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.fall dl dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.fall .aktionen {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fall button {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--blue);
+  border-radius: 0.4rem;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.fall button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.fall.laeuft {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+/* Ergebnis: die Panel-Styles aus muster13.css gelten, nur breiter */
+.vorlagen .panel {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  align-items: start;
+  gap: 0.8rem;
+}
+
+.vorlagen .panel .card.breit {
+  grid-column: 1 / -1;
+}
+
+.vergleich {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.vergleich.passt {
+  color: var(--green);
+}
+
+.vergleich.abweichung {
+  color: var(--amber);
+}
+
+.vorlagen table.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  background: #fff;
+  border: 1px solid #d6dce5;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.vorlagen table.tabelle th,
+.vorlagen table.tabelle td {
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid #e6ebf2;
+}
+
+.vorlagen table.tabelle th {
+  background: #eef2f8;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.vorlagen table.tabelle tr:last-child td {
+  border-bottom: 0;
+}
+
+.vorlagen table.tabelle td.passt {
+  color: var(--green);
+}
+
+.vorlagen table.tabelle td.abweichung {
+  color: var(--amber);
+}

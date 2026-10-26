@@ -98,4 +98,38 @@ assert.match(http.parameters.url, /\/webhook\/verordnungs-check\/chat$/, 'Formul
 assert.equal(formular.nodes.at(-1).type, 'n8n-nodes-base.form', 'Letzte Station muss die Ergebnisseite sein');
 console.log(`✓ Form-Workflow: ${felder.length} Felder abgebildet, Webhook und Ergebnisseite verdrahtet`);
 
+// --- 6. Vorlagen-Seite (Start mit dokumentierten Testfällen) ----------------
+const vorlagenJs = lies('formular/vorlagen.js');
+const datenDatei = lies('formular/vorlagen-daten.js');
+const win2 = {};
+new Function('window', datenDatei)(win2);
+const vorlagen = win2.VORLAGEN;
+
+// Die Daten müssen der Seed-Datei entsprechen – sonst laufen Demo und Evaluation auseinander.
+const seed = lies('supabase/seed/testfaelle.sql');
+const ausSeed = [...seed.matchAll(/\(\s*'([^']*)',\s*'(\{.*?\})',\s*'(\{.*?\})',\s*'([^']*)'\s*\)/gs)].map(
+  ([, name, verordnung, erwartet, beschreibung]) => ({
+    id: (name.match(/^(TF\d+)/) ?? [])[1],
+    name: name.replace(/^TF\d+\s+/, ''),
+    erwartet: JSON.parse(erwartet).gesamtstatus,
+    beschreibung,
+    verordnung: JSON.parse(verordnung),
+  }),
+);
+assert.ok(ausSeed.length > 0, 'keine Testfälle im Seed gefunden');
+assert.deepEqual(vorlagen, ausSeed, 'vorlagen-daten.js weicht vom Seed ab – `npm run vorlagen:daten` ausführen');
+
+for (const vorlage of vorlagen) {
+  assert.match(vorlage.id, /^TF\d+$/);
+  assert.ok(['gruen', 'gelb', 'rot'].includes(vorlage.erwartet), `${vorlage.id}: unbekannte Erwartung`);
+  assert.ok(vorlage.verordnung.icd10, `${vorlage.id}: ICD-Code fehlt`);
+  assert.ok(vorlage.verordnung.heilmittel?.length, `${vorlage.id}: kein Heilmittel`);
+}
+
+// Die Seite muss strukturiertes JSON an den Chat-Webhook schicken (kein Freitext).
+assert.match(vorlagenJs, /chatInput: JSON\.stringify\(vorlage\.verordnung\)/, 'Vorlage geht nicht als JSON an n8n');
+assert.match(vorlagenJs, /\/webhook\/verordnungs-check\/chat/, 'falscher Webhook');
+assert.match(lies('formular/vorlagen.html'), /vorlagen-daten\.js[\s\S]*vorlagen\.js/, 'Skripte in falscher Reihenfolge');
+console.log(`✓ Vorlagen-Seite: ${vorlagen.length} Fälle deckungsgleich mit dem Seed, Webhook verdrahtet`);
+
 console.log('\nAlle Prüfungen der Erfassungsmaske bestanden');

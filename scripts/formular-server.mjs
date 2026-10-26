@@ -23,7 +23,8 @@ const TYPEN = {
 
 createServer(async (anfrage, antwort) => {
   const pfad = decodeURIComponent(new URL(anfrage.url, 'http://127.0.0.1').pathname);
-  const datei = join(ORDNER, normalize(pfad === '/' ? '/muster13.html' : pfad));
+  const ziel = pfad === '/' ? '/muster13.html' : pfad === '/vorlagen' ? '/vorlagen.html' : pfad;
+  const datei = join(ORDNER, normalize(ziel));
 
   if (!datei.startsWith(ORDNER)) {
     antwort.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Verboten');
@@ -42,5 +43,6 @@ createServer(async (anfrage, antwort) => {
   }
 }).listen(PORT, '127.0.0.1', () => {
   console.log(`Erfassungsmaske: http://127.0.0.1:${PORT}/muster13.html`);
+  console.log(`Vorlagen:        http://127.0.0.1:${PORT}/vorlagen`);
   console.log('Beenden mit Strg+C.');
 });

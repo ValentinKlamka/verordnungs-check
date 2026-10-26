@@ -42,6 +42,11 @@ Drei Wege führen in dieselbe Prüfung:
    LLM-Agent sie im festen Schema. Fehlende Angaben werden `null`, nichts wird
    geraten.
 
+Zum Ausprobieren ohne Tippen: Unter `npm run formular` → `http://127.0.0.1:4321/vorlagen`
+liegen die zehn Testfälle aus dem Seed als Karten. Ein Klick prüft den Fall und stellt
+das Ergebnis neben die dort dokumentierte Erwartung; `npm run vorlagen:pruefen` macht
+dasselbe per CLI und ist damit die Evaluationsschleife des Prototyps.
+
 Der Workflow erkennt strukturiertes JSON selbst (`Eingabe prüfen` → `Verordnung
 strukturiert?`) und überspringt dann den Extraktor; die vier Prüfer laufen in beiden
 Fällen identisch.
@@ -155,6 +160,7 @@ npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import a
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
 npm run formular                            # Erfassungsmaske auf http://127.0.0.1:4321
+npm run vorlagen:pruefen                    # alle Testfälle gegen den laufenden Workflow prüfen
 npm run redaktion:bauen                     # lokaler Redaktionsdienst (PII) bauen
 npm run redaktion:starten                   # Dienst auf http://127.0.0.1:5680
 ```
@@ -204,7 +210,7 @@ Supabase und muss nur geladen werden, wenn die Instanz auf ein anderes Projekt z
 |---|---|
 | `n8n/` | Exportierte Workflows (.json) |
 | `scripts/` | Hilfsskripte für die lokale n8n-Instanz (Import vorbereiten) |
-| `formular/` | Erfassungsmaske Muster 13 (Eingabe), Beispieldaten, kein Build |
+| `formular/` | Erfassungsmaske Muster 13 (Eingabe), Vorlagen-Seite mit den Testfällen, Beispieldaten, kein Build |
 | `redaktion/` | Lokaler Redaktionsdienst (HuggingFace-NER + Regeln) für den Freitext-Weg, Port 5680 |
 | `n8n/formular.json` | n8n-Formular (Form Trigger) mit denselben Feldern, Abschlussseite mit Ergebnis |
 | `supabase/migrations/` | Datenbankschema |

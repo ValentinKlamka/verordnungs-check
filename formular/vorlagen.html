@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vorlagen – Verordnungs-Check</title>
+    <link rel="stylesheet" href="muster13.css" />
+    <link rel="stylesheet" href="vorlagen.css" />
+  </head>
+  <body class="vorlagen">
+    <header class="toolbar">
+      <div class="toolbar-main">
+        <strong>Vorlagen – Verordnungs-Check</strong>
+        <span class="muted">Ein Klick startet die Prüfung mit einem synthetischen Fall.</span>
+        <span class="muted" id="status">Bereit</span>
+      </div>
+      <div class="toolbar-actions">
+        <a class="knopf" href="muster13.html">Vordruck ausfüllen</a>
+        <button type="button" id="alle">Alle durchprüfen</button>
+      </div>
+    </header>
+
+    <main class="buehne">
+      <section class="block">
+        <h2>Testfälle aus der Evaluation</h2>
+        <p class="muted hinweis">
+          Die Fälle stammen aus <code>supabase/seed/testfaelle.sql</code>; die Erwartung ist dort
+          dokumentiert. Weicht das Ergebnis ab, steht das am Ergebnis – das ist ein Befund, kein Fehler
+          der Seite.
+        </p>
+        <div class="raster" id="raster"></div>
+      </section>
+
+      <section class="block" id="ergebnis" hidden>
+        <h2>Ergebnis</h2>
+        <div class="panel" id="ergebnis-panel"></div>
+      </section>
+
+      <section class="block" id="uebersicht" hidden>
+        <h2>Übersicht</h2>
+        <table class="tabelle" id="uebersicht-tabelle"></table>
+      </section>
+    </main>
+
+    <script src="vorlagen-daten.js"></script>
+    <script src="vorlagen.js"></script>
+  </body>
+</html>
