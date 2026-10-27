@@ -13,9 +13,11 @@ Kein Build, keine Abhängigkeiten. Feldzuordnung und Auswahlregeln:
 npm run formular        # http://127.0.0.1:4321/muster13.html
 ```
 
-Der kleine Dateiserver (`scripts/formular-server.mjs`) ist nötig, weil die Seite die
-Verordnung an n8n schickt (anderer Port). Aus dem Dateisystem heraus (`file://`)
-blockieren viele Browser diesen Aufruf. Ziel-Adresse ist
+Der Befehl startet `scripts/formular-server.mjs` – einen Dateiserver, der diesen Ordner
+ausliefert (Port 4321, nur auf `127.0.0.1`, anderer Port per `FORMULAR_PORT=4400`). Er ist
+nötig, weil die Seite die Verordnung an n8n schickt (anderer Port); aus dem Dateisystem
+heraus (`file://`) blockieren viele Browser diesen Aufruf. Der Server läuft nur, solange
+der Befehl läuft (kein Docker, kein Autostart) – beenden mit `Strg+C`. Ziel-Adresse ist
 `http://127.0.0.1:5678/webhook/verordnungs-check/chat`, überschreibbar per URL:
 `muster13.html?webhook=http://…/webhook/…/chat`.
 

@@ -161,11 +161,25 @@ npx n8n update:workflow --id=<workflow-id> --active=true   # nach jedem Import a
 # n8n ≥ 2.20: n8n publish:workflow --id=<workflow-id>
 npm run n8n:import:credentials                # optional: Credentials aus .n8n/credentials/ importieren
 npm run n8n:execute -- --id <workflow-id>     # Workflow ohne Oberfläche ausführen (z. B. Wissensbasis laden)
-npm run formular                            # Erfassungsmaske auf http://127.0.0.1:4321
+npm run formular                            # Erfassungsmaske + Vorlagen auf http://127.0.0.1:4321
 npm run vorlagen:pruefen                    # alle Testfälle gegen den laufenden Workflow prüfen
 npm run redaktion:bauen                     # lokaler Redaktionsdienst (PII) bauen
 npm run redaktion:starten                   # Dienst auf http://127.0.0.1:5680
 ```
+
+### Welcher Port gehört wem
+
+| Port | Dienst | Start | Läuft |
+|---|---|---|---|
+| **5678** | n8n (Editor, Chat, n8n-Formular) | `npm run n8n` **oder** `docker start <container>` | bis Prozess/Container endet |
+| **5680** | Redaktionsdienst (PII, nur Freitext-Weg) | `npm run redaktion:starten` (Docker) oder `npm run redaktion:lokal` (Python) | Container mit `--restart unless-stopped`, sonst bis zum Beenden |
+| **4321** | Dateiserver für `formular/` – Erfassungsmaske **und** Vorlagen-Seite | `npm run formular` | **nur solange der Befehl läuft** (kein Docker, kein Autostart) |
+
+Der Server auf 4321 ist bewusst ein einfacher Node-Prozess (`scripts/formular-server.mjs`),
+der `formular/` ausliefert: `http://127.0.0.1:4321/muster13.html` und
+`http://127.0.0.1:4321/vorlagen`. Er ist nötig, weil die Seiten die Verordnung per `fetch`
+an n8n schicken – aus `file://` blockieren das viele Browser. Anderer Port bei Bedarf:
+`FORMULAR_PORT=4400 npm run formular`. Beenden mit `Strg+C` im Terminal.
 
 Port 5678 gehört n8n; der Redaktionsdienst für den Freitext-Weg läuft deshalb auf 5680
 (Details: [`redaktion/README.md`](redaktion/README.md)).
